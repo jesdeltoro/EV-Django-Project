@@ -2,17 +2,20 @@
 {% load static %}
 {% block title %}Inicio{% endblock %}
 {% block content %}
+<!-- Add Animate.css library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
 <!-- Hero Section with FIND/CHARGE/GO -->
-<div class="hero-section" style="background-color: rgba(75, 0, 130, 0.8); color: white; text-align: center; padding: 100px 20px; background-image: url('{% static 'core/img/charging-station-bg.jpg' %}'); background-size: cover; background-blend-mode: overlay; position: relative;">
+<div class="hero-section" style="background-color: rgba(75, 0, 130, 0.8); color: white; text-align: center; padding: 100px 20px; background-image: url('{% static 'core/img/cochescargando.jpg' %}'); background-size: cover; background-blend-mode: overlay; position: relative;">
   <div class="container">
     <div class="hero-text">
       <h1 style="font-size: 4.5rem; font-weight: 700; line-height: 1.2; margin-bottom: 1rem;">
-        CHAT<span style="color: #4CD964;">/</span><br>
-        FIND<span style="color: #4CD964;">/</span><br>
-        CHARGE<span style="color: #4CD964;">/</span><br>
-        GO<span style="color: #4CD964;">/</span>
+        <div id="line1" class="hero-line" style="visibility: hidden;">CHAT<span class="slash" style="color: #4CD964;">/</span></div>
+        <div id="line2" class="hero-line" style="visibility: hidden;">FIND<span class="slash" style="color: #4CD964;">/</span></div>
+        <div id="line3" class="hero-line" style="visibility: hidden;">CHARGE<span class="slash" style="color: #4CD964;">/</span></div>
+        <div id="line4" class="hero-line" style="visibility: hidden;">GO<span class="slash" style="color: #4CD964;">/</span></div>
       </h1>
-      <p class="lead" style="font-size: 1.8rem; margin-top: 2rem;">
+      <p id="tagline" class="lead" style="font-size: 1.8rem; margin-top: 2rem; visibility: hidden;">
         Busca nuestras Electrolineras con la app EvEMaps.
       </p>
     </div>
@@ -26,4 +29,27 @@
     <p class="lead">{{page_description}}</p>
   </div>
 </div>
+
+<!-- Animation Script -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Wait for page to load before starting animations
+    setTimeout(function() {
+      // Animate each line with alternating directions
+      animateElement('line1', 'animate__fadeInLeft', 0);
+      animateElement('line2', 'animate__fadeInRight', 400);
+      animateElement('line3', 'animate__fadeInLeft', 800);
+      animateElement('line4', 'animate__fadeInRight', 1200);
+      animateElement('tagline', 'animate__fadeInUp', 1600);
+    }, 500);
+    
+    function animateElement(id, animationClass, delay) {
+      setTimeout(function() {
+        const element = document.getElementById(id);
+        element.style.visibility = "visible";
+        element.classList.add('animate__animated', animationClass);
+      }, delay);
+    }
+  });
+</script>
 {% endblock %}

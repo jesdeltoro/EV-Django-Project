@@ -42,3 +42,20 @@ footer p {
 .box-shadow { 
     box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05); 
 }
+
+/* Mantener saltos de línea en el título */
+.hero-title { white-space: pre-line; }
+
+/* Caracteres individuales animados */
+.char { display:inline-block; opacity:0; }
+
+/* Slash verde */
+.slash { color:#4CD964; }
+
+/* Animaciones */
+@keyframes slideInLeft  { 0%{transform:translateX(-120%);opacity:0;} 100%{transform:translateX(0);opacity:1;} }
+@keyframes slideInRight { 0%{transform:translateX(120%);opacity:0;} 100%{transform:translateX(0);opacity:1;} }
+
+.slide-left  { animation: slideInLeft  0.8s forwards; }
+.slide-right { animation: slideInRight 0.8s forwards; }
+
