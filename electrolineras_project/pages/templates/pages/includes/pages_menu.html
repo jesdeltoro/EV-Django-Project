@@ -1,0 +1,32 @@
+{% load static %}
+<link href="{% static 'pages/css/custom_editor.css' %}" rel="stylesheet"> <!-- Cambiado a custom_editor.css -->
+<script src="https://cdn.tiny.cloud/1/ahrljdxg24bicspsin89yebebwji57y5zwj4t638a3tn1201/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+    tinymce.init({
+        selector: 'textarea',  // Selecciona los campos <textarea>
+        plugins: 'lists link image table code',
+        toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | link image | code',
+        height: 500
+    });
+</script>
+
+{% if request.user.is_staff %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+        <span class="navbar-brand"><i>Administrar</i></span>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nep" aria-controls="nep" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="nep">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'pages:create' %}"><i>Crear página</i></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'pages:pages' %}">Listar páginas</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+{% endif %}

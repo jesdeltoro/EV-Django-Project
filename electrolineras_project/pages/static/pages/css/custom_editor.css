@@ -1,0 +1,11 @@
+/* Estilos para el widget de TinyMCE */
+.tox {
+  width: 100%;
+  max-width: 821px;
+}
+
+.tox-editor-container {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+}
