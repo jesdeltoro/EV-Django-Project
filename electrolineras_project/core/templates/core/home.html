@@ -2,10 +2,28 @@
 {% load static %}
 {% block title %}Inicio{% endblock %}
 {% block content %}
-<div class="container">
+<!-- Hero Section with FIND/CHARGE/GO -->
+<div class="hero-section" style="background-color: rgba(75, 0, 130, 0.8); color: white; text-align: center; padding: 100px 20px; background-image: url('{% static 'core/img/charging-station-bg.jpg' %}'); background-size: cover; background-blend-mode: overlay; position: relative;">
+  <div class="container">
+    <div class="hero-text">
+      <h1 style="font-size: 4.5rem; font-weight: 700; line-height: 1.2; margin-bottom: 1rem;">
+        CHAT<span style="color: #4CD964;">/</span><br>
+        FIND<span style="color: #4CD964;">/</span><br>
+        CHARGE<span style="color: #4CD964;">/</span><br>
+        GO<span style="color: #4CD964;">/</span>
+      </h1>
+      <p class="lead" style="font-size: 1.8rem; margin-top: 2rem;">
+        Busca nuestras Electrolineras con la app EvEMaps.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Original Content Section -->
+<div class="container" style="background-color: #f8f5ff;">
   <div style="padding-top:50px; text-align:center;">
-    <h1>Web Playground</h1>
-    <p class="lead">CBV, autenticación, registros, perfiles y más</p>
+    <h1>{{page_title}}</h1>
+    <p class="lead">{{page_description}}</p>
   </div>
 </div>
 {% endblock %}

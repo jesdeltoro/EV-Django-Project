@@ -16,9 +16,12 @@
   <body>
     <body>
       <!-- Navegación -->
-      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #9370DB;">
         <div class="container">
-          <a class="navbar-brand" href="{% url 'home' %}">Playground</a>
+          <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+            <img src="{% static 'core/img/EvEMaps.png' %}" alt="EvEMaps Logo" style="height: 40px; margin-right: 7px; border: 2px solid #9370DB; padding: 2px; background-color: #D8BFD8; border-radius: 4px;">
+            EvEMaps
+          </a>
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ned" aria-controls="ned" aria-expanded="false">
             <span class="navbar-toggler-icon"></span>
           </button>
