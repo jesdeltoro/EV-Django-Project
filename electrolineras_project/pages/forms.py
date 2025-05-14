@@ -11,9 +11,9 @@ class PageForm(forms.ModelForm):
             'order': forms.NumberInput(attrs={'class': 'form-control'}),
         }
         labels = {
-            'title': 'Title',
-            'content': 'Content',
-            'order': 'Order',
+            'title': 'Título',
+            'content': 'Contenido',
+            'order': 'Orden',
         }
 
 
