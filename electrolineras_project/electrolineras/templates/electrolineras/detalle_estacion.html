@@ -1,0 +1,16 @@
+{% extends "core/base.html" %}
+{% block title %}Detalle Estación{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>{{ punto_recarga.nombre }}</h2>
+  <ul class="list-group">
+    <li class="list-group-item"><strong>Dirección:</strong> {{ punto_recarga.direccion }}</li>
+    <li class="list-group-item"><strong>Latitud:</strong> {{ punto_recarga.latitud }}</li>
+    <li class="list-group-item"><strong>Longitud:</strong> {{ punto_recarga.longitud }}</li>
+    <li class="list-group-item"><strong>Potencia:</strong> {{ punto_recarga.potencia_kw }} kW</li>
+    <li class="list-group-item"><strong>Tipo de conector:</strong> {{ punto_recarga.tipo_conector.denominacion }}</li>
+  </ul>
+  <a href="{% url 'mapa_puntos' %}" class="btn btn-secondary mt-3">Volver al mapa</a>
+</div>
+{% endblock %}

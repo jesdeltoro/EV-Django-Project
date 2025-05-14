@@ -1,0 +1,37 @@
+[
+  {
+    "model": "electrolineras.conector",
+    "pk": 1,
+    "fields": {"codigo": 1, "denominacion": "Schuko", "potencia_kw": 3.7}
+  },
+  {
+    "model": "electrolineras.conector",
+    "pk": 2,
+    "fields": {"codigo": 2, "denominacion": "Mennekes (Tipo 2)", "potencia_kw": 22}
+  },
+  {
+    "model": "electrolineras.conector",
+    "pk": 3,
+    "fields": {"codigo": 3, "denominacion": "CCS Combo Tipo 2", "potencia_kw": 50}
+  },
+  {
+    "model": "electrolineras.conector",
+    "pk": 4,
+    "fields": {"codigo": 4, "denominacion": "CHAdeMO", "potencia_kw": 50}
+  },
+  {
+    "model": "electrolineras.conector",
+    "pk": 5,
+    "fields": {"codigo": 5, "denominacion": "Tesla Supercharger", "potencia_kw": 150}
+  },
+  {
+    "model": "electrolineras.conector",
+    "pk": 6,
+    "fields": {"codigo": 6, "denominacion": "Tipo 1 (SAE J1772)", "potencia_kw": 7.4}
+  },
+  {
+    "model": "electrolineras.conector",
+    "pk": 7,
+    "fields": {"codigo": 7, "denominacion": "CCS Combo Tipo 1", "potencia_kw": 50}
+  }
+]
