@@ -5,6 +5,9 @@
   <meta charset="UTF-8">
   <title>Mapa de Puntos de Recarga</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <!-- CSS de MarkerCluster -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
   <style>
     #map {
       height: 600px;
@@ -26,6 +29,8 @@
     </ul>
   </div>
   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <!-- Script de MarkerCluster -->
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script>
     // Definir la URL del icono personalizado
     var iconUrl = "{% static 'electrolineras/img/electricar.png' %}";
@@ -52,22 +57,36 @@
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
+    // Crear un grupo de clusters para los marcadores
+    var markers = L.markerClusterGroup({
+      showCoverageOnHover: true,
+      zoomToBoundsOnClick: true,
+      spiderfyOnMaxZoom: true
+    });
+
     {% for punto in puntos %}
-      var lat = parseFloat("{{ punto.latitud }}".replace(',', '.'));
-      var lon = parseFloat("{{ punto.longitud }}".replace(',', '.'));
+      // Solo crea el marcador si hay latitud y longitud válidas
+      var lat = parseFloat("{{ punto.latitud|stringformat:'f'|default_if_none:'0' }}".replace(',', '.'));
+      var lon = parseFloat("{{ punto.longitud|stringformat:'f'|default_if_none:'0' }}".replace(',', '.'));
       console.log("Marcador:", "{{ punto.nombre }}", lat, lon);
       if (!isNaN(lat) && !isNaN(lon) && lat !== 0 && lon !== 0) {
-        L.marker([lat, lon], { icon: customIcon })
-          .addTo(map)
+        var gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
+        var marker = L.marker([lat, lon], { icon: customIcon })
           .bindPopup(`
             <strong>{{ punto.nombre|escapejs }}</strong><br>
             {{ punto.direccion|escapejs }}<br>
             Potencia: {{ punto.potencia_kw }} kW<br>
             Conector: {{ punto.tipo_conector.denominacion|escapejs }}<br>
-            <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}" target="_blank">Cómo llegar</a>
+            <a href="${gmapsUrl}" target="_blank">Cómo llegar</a>
           `);
+        
+        // Añadir al grupo de clusters en lugar de al mapa
+        markers.addLayer(marker);
       }
     {% endfor %}
+    
+    // Añadir el grupo de clusters al mapa
+    map.addLayer(markers);
   </script>
 </body>
 </html>
