@@ -6,8 +6,11 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 
 <!-- Hero Section with FIND/CHARGE/GO -->
-<div class="hero-section" style="background-color: rgba(75, 0, 130, 0.8); color: white; text-align: center; padding: 100px 20px; background-image: url('{% static 'core/img/cochescargando.jpg' %}'); background-size: cover; background-blend-mode: overlay; position: relative;">
-  <div class="container">
+<div class="hero-section" style="background-color: rgba(75, 0, 130, 0.7); color: white; text-align: center; padding: 100px 20px; position: relative; overflow: hidden;">
+  <!-- Blurred background image -->
+  <div style="background-image: url('{% static 'core/img/cochescargando.png' %}'); background-size: cover; filter: blur(4px); position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: -1;"></div>
+  
+  <div class="container" style="position: relative; z-index: 1;">
     <div class="hero-text">
       <h1 style="font-size: 4.5rem; font-weight: 700; line-height: 1.2; margin-bottom: 1rem;">
         <div id="line1" class="hero-line" style="visibility: hidden;">CHAT<span class="slash" style="color: #4CD964;">/</span></div>
