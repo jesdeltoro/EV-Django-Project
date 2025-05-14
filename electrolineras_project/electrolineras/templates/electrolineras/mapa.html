@@ -1,92 +1,80 @@
+{% extends 'core/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Mapa de Puntos de Recarga</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-  <!-- CSS de MarkerCluster -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
-  <style>
-    #map {
-      height: 600px;
-      width: 100%;
-    }
-  </style>
-</head>
-<body>
-  <h1>Mapa de Puntos de Recarga</h1>
-  <div id="map"></div>
-  <div>
-    <strong>Debug puntos:</strong>
-    <ul>
-      {% for punto in puntos %}
-        <li>{{ punto.nombre }} | {{ punto.latitud }} | {{ punto.longitud }}</li>
-      {% empty %}
-        <li>No hay puntos en la base de datos.</li>
-      {% endfor %}
-    </ul>
+
+{% block title %}Mapa de Puntos de Recarga{% endblock %}
+
+{% block content %}
+<div style="background-color: rgba(75, 0, 130, 0.7); padding: 20px 0 30px 0;">
+  <div class="container">
+    <h1 style="color: white; margin-bottom: 20px;">Mapa de Puntos de Recarga</h1>
+    <div id="map" style="height: 600px; width: 100%; margin-bottom: 20px; border-radius: 5px;"></div>
   </div>
-  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-  <!-- Script de MarkerCluster -->
-  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-  <script>
-    // Definir la URL del icono personalizado
-    var iconUrl = "{% static 'electrolineras/img/electricar.png' %}";
+</div>
 
-    // Crear el icono personalizado
-    var customIcon = L.icon({
-      iconUrl: iconUrl,
-      iconSize: [32, 32], // ajusta el tamaño según tu imagen
-      iconAnchor: [16, 32], // punto del icono que corresponde a la ubicación
-      popupAnchor: [0, -32] // posición del popup respecto al icono
-    });
+<!-- CSS de Leaflet y MarkerCluster -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
 
-    // Usar coordenadas del primer punto de la base de datos o valores por defecto
-    {% if puntos and puntos|length > 0 %}
-      var centroLat = parseFloat("{{ centro_lat|stringformat:'f' }}".replace(',', '.'));
-      var centroLon = parseFloat("{{ centro_lon|stringformat:'f' }}".replace(',', '.'));
-    {% else %}
-      var centroLat = 36.7213;
-      var centroLon = -4.4214;
-    {% endif %}
-    var map = L.map('map').setView([centroLat, centroLon], 13);
+<!-- JavaScript de Leaflet y MarkerCluster -->
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+<script>
+  // Definir la URL del icono personalizado
+  var iconUrl = "{% static 'electrolineras/img/electricar.png' %}";
 
-    // Crear un grupo de clusters para los marcadores
-    var markers = L.markerClusterGroup({
-      showCoverageOnHover: true,
-      zoomToBoundsOnClick: true,
-      spiderfyOnMaxZoom: true
-    });
+  // Crear el icono personalizado
+  var customIcon = L.icon({
+    iconUrl: iconUrl,
+    iconSize: [32, 32], // ajusta el tamaño según tu imagen
+    iconAnchor: [16, 32], // punto del icono que corresponde a la ubicación
+    popupAnchor: [0, -32] // posición del popup respecto al icono
+  });
 
-    {% for punto in puntos %}
-      // Solo crea el marcador si hay latitud y longitud válidas
-      var lat = parseFloat("{{ punto.latitud|stringformat:'f'|default_if_none:'0' }}".replace(',', '.'));
-      var lon = parseFloat("{{ punto.longitud|stringformat:'f'|default_if_none:'0' }}".replace(',', '.'));
-      console.log("Marcador:", "{{ punto.nombre }}", lat, lon);
-      if (!isNaN(lat) && !isNaN(lon) && lat !== 0 && lon !== 0) {
-        var gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
-        var marker = L.marker([lat, lon], { icon: customIcon })
-          .bindPopup(`
-            <strong>{{ punto.nombre|escapejs }}</strong><br>
-            {{ punto.direccion|escapejs }}<br>
-            Potencia: {{ punto.potencia_kw }} kW<br>
-            Conector: {{ punto.tipo_conector.denominacion|escapejs }}<br>
-            <a href="${gmapsUrl}" target="_blank">Cómo llegar</a>
-          `);
-        
-        // Añadir al grupo de clusters en lugar de al mapa
-        markers.addLayer(marker);
-      }
-    {% endfor %}
-    
-    // Añadir el grupo de clusters al mapa
-    map.addLayer(markers);
-  </script>
-</body>
-</html>
+  // Usar coordenadas del primer punto de la base de datos o valores por defecto
+  {% if puntos and puntos|length > 0 %}
+    var centroLat = parseFloat("{{ centro_lat|stringformat:'f' }}".replace(',', '.'));
+    var centroLon = parseFloat("{{ centro_lon|stringformat:'f' }}".replace(',', '.'));
+  {% else %}
+    var centroLat = 36.7213;
+    var centroLon = -4.4214;
+  {% endif %}
+  var map = L.map('map').setView([centroLat, centroLon], 13);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  // Crear un grupo de clusters para los marcadores
+  var markers = L.markerClusterGroup({
+    showCoverageOnHover: true,
+    zoomToBoundsOnClick: true,
+    spiderfyOnMaxZoom: true
+  });
+
+  {% for punto in puntos %}
+    // Solo crea el marcador si hay latitud y longitud válidas
+    var lat = parseFloat("{{ punto.latitud|stringformat:'f'|default_if_none:'0' }}".replace(',', '.'));
+    var lon = parseFloat("{{ punto.longitud|stringformat:'f'|default_if_none:'0' }}".replace(',', '.'));
+    console.log("Marcador:", "{{ punto.nombre }}", lat, lon);
+    if (!isNaN(lat) && !isNaN(lon) && lat !== 0 && lon !== 0) {
+      var gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
+      var marker = L.marker([lat, lon], { icon: customIcon })
+        .bindPopup(`
+          <strong>{{ punto.nombre|escapejs }}</strong><br>
+          {{ punto.direccion|escapejs }}<br>
+          Potencia: {{ punto.potencia_kw }} kW<br>
+          Conector: {{ punto.tipo_conector.denominacion|escapejs }}<br>
+          <a href="${gmapsUrl}" target="_blank">Cómo llegar</a>
+        `);
+      
+      // Añadir al grupo de clusters en lugar de al mapa
+      markers.addLayer(marker);
+    }
+  {% endfor %}
+  
+  // Añadir el grupo de clusters al mapa
+  map.addLayer(markers);
+</script>
+{% endblock %}
