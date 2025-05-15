@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'electrolineras',
     'profiles',
     'core',
+    'messenger',
     'pages.apps.PagesConfig',
     'tinymce',  # Add TinyMCE to installed apps
 ]
