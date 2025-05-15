@@ -11,9 +11,12 @@ from django.utils.decorators import method_decorator
 
 
 class StaffRequiredMixin(object):
+    """
+    Este mixin requerirá que el usuario sea miembro del staff
+    """
     @method_decorator(staff_member_required)
     def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
+        return super(StaffRequiredMixin, self).dispatch(request, *args, **kwargs)
     
 
 class PageListView(ListView):
@@ -30,30 +33,7 @@ class PageCreate(CreateView):
     model = Page
     form_class = PageForm
     success_url = reverse_lazy('pages:pages')
-    
-    def form_valid(self, form):
-        """Process the form if it's valid."""
-        try:
-            # Save the form data to create the page
-            response = super().form_valid(form)
-            # Add a success message
-            messages.success(self.request, "La página se ha creado correctamente.")
-            return response
-        except Exception as e:
-            # Log the exception
-            print(f"Error saving page: {e}")
-            # Add an error message
-            messages.error(self.request, f"Error al crear la página: {e}")
-            return redirect('pages:pages')
-    
-    def form_invalid(self, form):
-        """Process the form if it's invalid."""
-        # Log form errors to console for debugging
-        print(f"Form validation errors: {form.errors}")
-        # Add an error message 
-        messages.error(self.request, "Revisa los errores en el formulario.")
-        return super().form_invalid(form)
-    
+
 @method_decorator(staff_member_required, name='dispatch')    
 class PageUpdate(UpdateView):
     model = Page
