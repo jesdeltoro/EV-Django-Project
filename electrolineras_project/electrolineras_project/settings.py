@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'electrolineras',
+    'profiles',
     'core',
     'pages.apps.PagesConfig',
     'tinymce',  # Add TinyMCE to installed apps
@@ -158,9 +159,12 @@ TINYMCE_DEFAULT_CONFIG = {
 }
 
 # Auth redirects
-LOGIN_REDIRECT_URL = 'pages:pages'
+# LOGIN_REDIRECT_URL = 'pages:pages'
 LOGOUT_REDIRECT_URL = 'home'
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')  # Change this to a proper directory
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

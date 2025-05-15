@@ -33,21 +33,32 @@
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'pages:pages' %}">Blog</a>
               </li>
+              {% if request.user.is_authenticated %}
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'mapa_puntos_recarga' %}">Mapa</a>
               </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'profiles:list' %}">Perfiles</a>
+              </li>
+              {% endif %}
             </ul>
             <ul class="navbar-nav">
             {% if not request.user.is_authenticated %}
               <li class="nav-item">
-                <a class="nav-link" href="{ % url 'login' % }">Login</a>       
+                <a class="nav-link" href="{% url 'login' %}">Login</a>       
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="{% url 'signup' % }">Registro</a>
+                <a class="nav-link" href="{% url 'signup' %}">Registro</a>
               </li>
             {% else %}
               <li class="nav-item">
-                <a class="nav-link" href="{% url 'logout' % }">Salir</a> 
+                <a class="nav-link" href="{% url 'profile' %}">Perfil</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Salir</a>
+                <form id="logout-form" method="post" action="{% url 'logout' %}" style="display:none;">
+                  {% csrf_token %}
+                </form>
               </li>
             {% endif %}
             </ul>
