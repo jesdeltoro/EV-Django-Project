@@ -1,5 +1,5 @@
-﻿Descomprime esta App en tu proyecto webplayground:
+﻿Copia estos templates en la app registration dentro de templates/registration del proyecto webplayground:
 
-· En Windows	C:\CursoDjango\webplayground
-· En Mac OS		/Users/tu_usuario/Documents/CursoDjango/webplayground
-· En Linux 		/home/tu_usuario/CursoDjango/webplayground
+· En Windows	C:\CursoDjango\webplayground\registration\templates\registration
+· En Mac OS		/Users/tu_usuario/Documents/CursoDjango/webplayground/registration/templates/registration
+· En Linux 		/home/tu_usuario/CursoDjango/webplayground/registration/templates/registration
