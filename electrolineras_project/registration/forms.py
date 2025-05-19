@@ -20,12 +20,26 @@ class UserCreationFormWithEmail(UserCreationForm):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['avatar', 'bio', 'link']
+        fields = ['avatar', 'bio', 'link', 'alias']
         widgets = {
             'avatar': forms.ClearableFileInput(attrs={'class':'form-control-file mt-3'}),
             'bio': forms.Textarea(attrs={'class':'form-control mt-3', 'rows':3, 'placeholder':'Biografía'}),
             'link': forms.URLInput(attrs={'class':'form-control mt-3', 'placeholder':'Enlace'}),
+            'alias': forms.TextInput(attrs={'class':'form-control mt-3', 'placeholder':'Alias'}),
         }
+
+    def clean_alias(self):
+        alias = self.cleaned_data.get("alias")
+        if alias:
+            # Get current instance
+            instance = getattr(self, 'instance', None)
+            # Check for duplicates excluding current instance
+            queryset = Profile.objects.filter(alias=alias)
+            if instance and instance.pk:
+                queryset = queryset.exclude(pk=instance.pk)
+            if queryset.exists():
+                raise forms.ValidationError("El alias ya está registrado, prueba con otro.")
+        return alias
 
 
 class EmailForm(forms.ModelForm):
@@ -41,3 +55,24 @@ class EmailForm(forms.ModelForm):
             if User.objects.filter(email=email).exists():
                 raise forms.ValidationError("El email ya está registrado, prueba con otro.")
         return email
+
+
+class AliasForm(forms.ModelForm):
+    alias = forms.CharField(required=False, help_text="Opcional. Introduce un alias único para identificarte.")
+
+    class Meta:
+        model = Profile
+        fields = ['alias']
+
+    def clean_alias(self):
+        alias = self.cleaned_data.get("alias")
+        if alias:
+            # Get current instance
+            instance = getattr(self, 'instance', None)
+            # Check for duplicates excluding current instance
+            queryset = Profile.objects.filter(alias=alias)
+            if instance and instance.pk:
+                queryset = queryset.exclude(pk=instance.pk)
+            if queryset.exists():
+                raise forms.ValidationError("El alias ya está registrado, prueba con otro.")
+        return alias

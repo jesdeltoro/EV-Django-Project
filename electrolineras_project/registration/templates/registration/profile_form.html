@@ -21,9 +21,31 @@
             <!-- Formulario -->
             <div class="col-md-10">
               <h3>Perfil</h3>
+              {% if form.errors %}
+                <div class="alert alert-danger">
+                  <strong>Por favor corrige los siguientes errores:</strong>
+                  <ul>
+                    {% for field in form %}
+                      {% if field.errors %}
+                        {% for error in field.errors %}
+                          <li>{{ field.label }}: {{ error }}</li>
+                        {% endfor %}
+                      {% endif %}
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endif %}
               <input type="file" name="avatar" class="form-control-file mt-3" id="id_avatar">
               {{ form.bio }}
               {{ form.link }}
+              {{ form.alias }}
+              {% if form.alias.errors %}
+                <div class="alert alert-danger">
+                  {% for error in form.alias.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
               <input type="email" value="{{request.user.email}}" class="form-control mt-3" readonly>
               <p class="mt-3">
                 Si deseas editar tu email haz clic <a href="{% url 'profile_email' %}">aquí</a>.<br>
