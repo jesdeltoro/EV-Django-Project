@@ -21,6 +21,196 @@
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
 <script>
+  // Función para manejar reservas
+  const reservationManager = {
+    // Duración de la reserva en milisegundos (30 minutos)
+    RESERVATION_DURATION: 30 * 60 * 1000,
+    
+    // Obtiene todas las reservas actuales
+    getReservations: function() {
+      const reservations = localStorage.getItem('chargingPointReservations');
+      return reservations ? JSON.parse(reservations) : {};
+    },
+    
+    // Comprueba si un punto está reservado
+    isReserved: function(pointId) {
+      const reservations = this.getReservations();
+      return reservations[pointId] && reservations[pointId].expiry > Date.now();
+    },
+    
+    // Comprueba si un punto está reservado por el usuario actual
+    isReservedByCurrentUser: function(pointId) {
+      const reservations = this.getReservations();
+      return reservations[pointId] && 
+             reservations[pointId].expiry > Date.now() && 
+             reservations[pointId].userId === this.getCurrentUserId();
+    },
+    
+    // Reserva un punto
+    reservePoint: function(pointId, pointName) {
+      const reservations = this.getReservations();
+      const expiry = Date.now() + this.RESERVATION_DURATION;
+      let username = this.getUserName();
+      
+      // Asegurarse de que siempre haya un nombre de usuario
+      if (!username) {
+        username = "Usuario" + Math.floor(Math.random() * 1000);
+        this.setUserName(username);
+      }
+      
+      reservations[pointId] = {
+        expiry: expiry,
+        userId: this.getCurrentUserId(),
+        pointName: pointName,
+        userName: username
+      };
+      
+      localStorage.setItem('chargingPointReservations', JSON.stringify(reservations));
+      
+      // Recrear los marcadores después de una reserva
+      recreateMarkers();
+      
+      // Obtener el marcador correspondiente y abrir el popup
+      allChargingPoints.forEach(point => {
+        if (point.id === pointId) {
+          const marker = markers.getLayers().find(m => m.getLatLng().lat === point.lat && m.getLatLng().lng === point.lon);
+          if (marker) {
+            marker.openPopup();
+          }
+        }
+      });
+      
+      // Mostrar mensaje de éxito
+      alert(`Punto de carga reservado con éxito:\n\n${pointName}\nExpira en: ${reservationManager.formatRemainingTime(reservationManager.getRemainingTime(pointId))}`);
+      
+      return expiry;
+    },
+    
+    // Verifica si el usuario actual ya tiene una reserva activa
+    hasActiveReservation: function() {
+      const reservations = this.getReservations();
+      const currentUserId = this.getCurrentUserId();
+      const now = Date.now();
+      
+      for (const pointId in reservations) {
+        if (reservations[pointId].userId === currentUserId && 
+            reservations[pointId].expiry > now) {
+          return true;
+        }
+      }
+      return false;
+    },
+    
+    // Obtiene los detalles de la reserva activa del usuario actual
+    getActiveReservationDetails: function() {
+      const reservations = this.getReservations();
+      const currentUserId = this.getCurrentUserId();
+      const now = Date.now();
+      
+      for (const pointId in reservations) {
+        if (reservations[pointId].userId === currentUserId && 
+            reservations[pointId].expiry > now) {
+          return {
+            pointId: pointId,
+            pointName: reservations[pointId].pointName,
+            timeRemaining: this.formatRemainingTime(reservations[pointId].expiry - now)
+          };
+        }
+      }
+      return null;
+    },
+    
+    // Obtiene el tiempo restante de una reserva
+    getRemainingTime: function(pointId) {
+      const reservations = this.getReservations();
+      if (!reservations[pointId]) return 0;
+      
+      const remaining = reservations[pointId].expiry - Date.now();
+      return remaining > 0 ? remaining : 0;
+    },
+    
+    // Formatea el tiempo restante como MM:SS
+    formatRemainingTime: function(milliseconds) {
+      if (milliseconds <= 0) return "00:00";
+      
+      const totalSeconds = Math.floor(milliseconds / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      
+      return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    },
+    
+    // Devuelve un ID de usuario único (simulado)
+    getCurrentUserId: function() {
+      let userId = localStorage.getItem('currentUserId');
+      if (!userId) {
+        userId = 'user_' + Date.now();
+        localStorage.setItem('currentUserId', userId);
+      }
+      return userId;
+    },
+    
+    // Obtiene el nombre de usuario
+    getUserName: function() {
+      return localStorage.getItem('currentUserName') || '';
+    },
+    
+    // Establece el nombre de usuario
+    setUserName: function(name) {
+      localStorage.setItem('currentUserName', name);
+    },
+    
+    // Obtiene el nombre del usuario que reservó un punto
+    getReservationUserName: function(pointId) {
+      const reservations = this.getReservations();
+      return reservations[pointId] && reservations[pointId].userName ? 
+             reservations[pointId].userName : 'Usuario desconocido';
+    },
+    
+    // Limpia reservas expiradas
+    cleanExpiredReservations: function() {
+      const reservations = this.getReservations();
+      let changed = false;
+      
+      for (const pointId in reservations) {
+        if (reservations[pointId].expiry < Date.now()) {
+          delete reservations[pointId];
+          changed = true;
+        }
+      }
+      
+      if (changed) {
+        localStorage.setItem('chargingPointReservations', JSON.stringify(reservations));
+        recreateMarkers();
+      }
+    }
+  };
+  
+  // Migración: Corregir reservas existentes sin nombre de usuario
+  (function() {
+    const reservations = reservationManager.getReservations();
+    let changed = false;
+    
+    for (const pointId in reservations) {
+      if (!reservations[pointId].userName) {
+        reservations[pointId].userName = "Usuario" + Math.floor(Math.random() * 1000);
+        changed = true;
+      }
+    }
+    
+    if (changed) {
+      localStorage.setItem('chargingPointReservations', JSON.stringify(reservations));
+    }
+  })();
+  
+  // Limpiar reservas expiradas cada minuto
+  setInterval(() => {
+    reservationManager.cleanExpiredReservations();
+  }, 60000);
+  
+  // Limpiar reservas expiradas al cargar la página
+  reservationManager.cleanExpiredReservations();
+
   // Definir la URL del icono personalizado
   var iconUrl = "{% static 'electrolineras/img/electricar.png' %}";
 
@@ -40,6 +230,7 @@
     var centroLat = 36.7213;
     var centroLon = -4.4214;
   {% endif %}
+  
   var map = L.map('map').setView([centroLat, centroLon], 13);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -52,29 +243,191 @@
     zoomToBoundsOnClick: true,
     spiderfyOnMaxZoom: true
   });
-
+  
+  // Almacenar los datos de todos los puntos para recrear los marcadores cuando sea necesario
+  const allChargingPoints = [];
+  
   {% for punto in puntos %}
-    // Solo crea el marcador si hay latitud y longitud válidas
+    // Solo añade el punto si hay latitud y longitud válidas
     var lat = parseFloat("{{ punto.latitud|stringformat:'f'|default_if_none:'0' }}".replace(',', '.'));
     var lon = parseFloat("{{ punto.longitud|stringformat:'f'|default_if_none:'0' }}".replace(',', '.'));
-    console.log("Marcador:", "{{ punto.nombre }}", lat, lon);
+    
     if (!isNaN(lat) && !isNaN(lon) && lat !== 0 && lon !== 0) {
-      var gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
-      var marker = L.marker([lat, lon], { icon: customIcon })
-        .bindPopup(`
-          <strong>{{ punto.nombre|escapejs }}</strong><br>
-          {{ punto.direccion|escapejs }}<br>
-          Potencia: {{ punto.potencia_kw }} kW<br>
-          Conector: {{ punto.tipo_conector.denominacion|escapejs }}<br>
-          <a href="${gmapsUrl}" target="_blank">Cómo llegar</a>
-        `);
-      
-      // Añadir al grupo de clusters en lugar de al mapa
-      markers.addLayer(marker);
+      allChargingPoints.push({
+        id: "{{ punto.id }}",
+        name: "{{ punto.nombre|escapejs }}",
+        address: "{{ punto.direccion|escapejs }}",
+        power: "{{ punto.potencia_kw }}",
+        connector: "{{ punto.tipo_conector.denominacion|escapejs }}",
+        lat: lat,
+        lon: lon
+      });
     }
   {% endfor %}
   
-  // Añadir el grupo de clusters al mapa
-  map.addLayer(markers);
+  // Función para crear y actualizar los marcadores
+  function createMarkers() {
+    // Limpiar marcadores existentes
+    markers.clearLayers();
+    
+    // Para cada punto de carga
+    allChargingPoints.forEach(point => {
+      const pointId = point.id;
+      const isReserved = reservationManager.isReserved(pointId);
+      const isReservedByMe = reservationManager.isReservedByCurrentUser(pointId);
+      
+      // Mostrar el punto si no está reservado o está reservado por el usuario actual
+      if (!isReserved || isReservedByMe) {
+        const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${point.lat},${point.lon}`;
+        
+        // Determinar el estado del botón de reserva
+        let reserveButton;
+        
+        if (isReservedByMe) {
+          // El punto ya está reservado por mí, mostrar el botón deshabilitado
+          reserveButton = `<button disabled style="padding: 6px 12px; background: #808080; color: #fff; border-radius: 4px; text-decoration: none; font-size: 14px; border: none; cursor: not-allowed;">Reservado</button>`;
+        } else {
+          // El punto está disponible para reserva
+          reserveButton = `<button onclick="reserveChargingPoint('${pointId}', '${point.name}')" style="padding: 6px 12px; background: #228B22; color: #fff; border-radius: 4px; text-decoration: none; font-size: 14px; border: none; cursor: pointer;">Reservar</button>`;
+        }
+        
+        // Preparar contenido del popup
+        let popupContent = `
+          <strong>${point.name}</strong><br>
+          ${point.address}<br>
+          Potencia: ${point.power} kW<br>
+          Conector: ${point.connector}<br>
+        `;
+        
+        // Añadir información de reserva si está reservado
+        if (isReserved) {
+          const reservingUser = reservationManager.getReservationUserName(pointId);
+          popupContent += `
+          <div style="margin-top: 8px; text-align: center;">
+            <strong>Reservado por: ${reservingUser}</strong><br>
+          `;
+          
+          // Añadir contador de tiempo si está reservado por mí
+          if (isReservedByMe) {
+            popupContent += `
+            <strong>Tiempo restante: <span id="countdown-${pointId}">${reservationManager.formatRemainingTime(reservationManager.getRemainingTime(pointId))}</span></strong>
+            `;
+          }
+          
+          popupContent += `</div>`;
+        }
+        
+        // Añadir los botones
+        popupContent += `
+          <div style="display: flex; justify-content: center; gap: 10px; margin-top: 8px;">
+            <a href="${gmapsUrl}" target="_blank" style="padding: 6px 12px; background: #4B0082; color: #fff; border-radius: 4px; text-decoration: none; font-size: 14px;">Cómo llegar</a>
+            ${reserveButton}
+          </div>
+        `;
+        
+        // Crear y añadir marcador
+        const marker = L.marker([point.lat, point.lon], { icon: customIcon })
+          .bindPopup(popupContent);
+          
+        markers.addLayer(marker);
+        
+        // Si está reservado por mí, iniciar el contador de tiempo
+        if (isReservedByMe) {
+          marker.on('popupopen', function() {
+            startCountdown(pointId);
+          });
+          
+          marker.on('popupclose', function() {
+            stopCountdown(pointId);
+          });
+        }
+      }
+    });
+    
+    // Asegurar que los marcadores estén en el mapa
+    if (!map.hasLayer(markers)) {
+      map.addLayer(markers);
+    }
+  }
+  
+  // Recrear marcadores (actualiza el mapa)
+  function recreateMarkers() {
+    createMarkers();
+  }
+  
+  // Variable para almacenar los intervalos del contador
+  const countdownIntervals = {};
+  
+  // Iniciar el contador de tiempo para un punto reservado
+  function startCountdown(pointId) {
+    // Detener cualquier contador existente para este punto
+    stopCountdown(pointId);
+    
+    // Iniciar nuevo contador
+    countdownIntervals[pointId] = setInterval(() => {
+      const remaining = reservationManager.getRemainingTime(pointId);
+      const countdownElement = document.getElementById(`countdown-${pointId}`);
+      
+      if (countdownElement) {
+        if (remaining > 0) {
+          countdownElement.textContent = reservationManager.formatRemainingTime(remaining);
+        } else {
+          countdownElement.textContent = "00:00";
+          stopCountdown(pointId);
+          recreateMarkers();
+        }
+      }
+    }, 1000);
+  }
+  
+  // Detener el contador de tiempo
+  function stopCountdown(pointId) {
+    if (countdownIntervals[pointId]) {
+      clearInterval(countdownIntervals[pointId]);
+      delete countdownIntervals[pointId];
+    }
+  }
+  
+  // Función para reservar un punto de carga
+  function reserveChargingPoint(pointId, pointName) {
+    // Verificar si el usuario ya tiene una reserva activa
+    if (reservationManager.hasActiveReservation()) {
+      const details = reservationManager.getActiveReservationDetails();
+      alert(`Ya tienes una reserva activa para "${details.pointName}" que expira en ${details.timeRemaining}.\nNo puedes reservar más de un punto a la vez.`);
+      return;
+    }
+    
+    // Verificar si el punto ya está reservado (verificación de último momento)
+    if (reservationManager.isReserved(pointId) && !reservationManager.isReservedByCurrentUser(pointId)) {
+      alert(`Lo sentimos, el punto "${pointName}" acaba de ser reservado por otro usuario.`);
+      recreateMarkers(); // Actualizar los marcadores para reflejar el estado actual
+      return;
+    }
+    
+    // Solicitar nombre de usuario si no está definido
+    let username = reservationManager.getUserName();
+    if (!username) {
+      username = prompt("Por favor introduce tu nombre para la reserva:", "");
+      if (!username) {
+        username = "Usuario" + Math.floor(Math.random() * 1000); // Nombre por defecto si cancelan
+      }
+      reservationManager.setUserName(username);
+    }
+    
+    reservationManager.reservePoint(pointId, pointName);
+  }
+  
+  // Escuchar cambios de localStorage en otras ventanas/pestañas
+  window.addEventListener('storage', function(e) {
+    // Solo nos interesan cambios en las reservas
+    if (e.key === 'chargingPointReservations') {
+      console.log('Detectado cambio en reservas desde otra ventana');
+      // Actualizar los marcadores para reflejar los cambios
+      recreateMarkers();
+    }
+  });
+  
+  // Crear los marcadores iniciales
+  createMarkers();
 </script>
 {% endblock %}
