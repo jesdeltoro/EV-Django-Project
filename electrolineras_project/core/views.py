@@ -1,5 +1,8 @@
 from django.views.generic.base import TemplateView
 from django.shortcuts import render
+from rest_framework import generics
+from rest_framework.permissions import AllowAny
+from .serializers import RegisterSerializer
 
 class HomePageView(TemplateView):
     template_name = "core/home.html"
@@ -17,3 +20,7 @@ class SamplePageView(TemplateView):
 
 class MapaPageView(TemplateView):
     template_name = "electrolineras/mapa.html"
+
+class RegisterAPIView(generics.CreateAPIView):
+    serializer_class = RegisterSerializer
+    permission_classes = [AllowAny]
