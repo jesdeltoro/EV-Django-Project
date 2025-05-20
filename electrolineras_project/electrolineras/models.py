@@ -1,4 +1,7 @@
 from django.db import models
+from django.conf import settings
+from django.utils import timezone
+from datetime import timedelta
 
 class Conector(models.Model):
     codigo = models.IntegerField(primary_key=True)
@@ -25,6 +28,20 @@ class PuntoRecarga(models.Model):
 
     def __str__(self):
         return self.nombre
+
+class Reserva(models.Model):
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    punto = models.ForeignKey('PuntoRecarga', on_delete=models.CASCADE)
+    fecha_inicio = models.DateTimeField(default=timezone.now)
+    fecha_expiracion = models.DateTimeField()
+
+    def save(self, *args, **kwargs):
+        if not self.fecha_expiracion:
+            self.fecha_expiracion = self.fecha_inicio + timedelta(minutes=30)
+        super().save(*args, **kwargs)
+
+    def is_activa(self):
+        return self.fecha_expiracion > timezone.now()
 
 
 
