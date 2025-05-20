@@ -49,6 +49,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'core.middleware.BlockDirectLoginAccessMiddleware',  # Añade aquí tu middleware personalizado
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -163,6 +164,7 @@ TINYMCE_DEFAULT_CONFIG = {
 # Auth redirects
 # LOGIN_REDIRECT_URL = 'pages:pages'
 LOGOUT_REDIRECT_URL = 'home'
+LOGIN_URL = '/accounts/login/'  # URL de login para redirigir a los usuarios no autenticados
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
@@ -174,6 +176,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
