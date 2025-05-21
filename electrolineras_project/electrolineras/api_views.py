@@ -16,7 +16,8 @@ class ReservaListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):  
-        return Reserva.objects.filter(usuario=self.request.user, fecha_expiracion__gt=timezone.now())
+        #return Reserva.objects.filter(usuario=self.request.user, fecha_expiracion__gt=timezone.now())
+        return super().get_queryset().filter(usuario=self.request.user, fecha_expiracion__gt=timezone.now())
 
     def create(self, request, *args, **kwargs):
         # Solo una reserva activa por usuario
