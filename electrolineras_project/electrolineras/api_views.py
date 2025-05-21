@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from django.utils import timezone
 from .models import PuntoRecarga, Reserva
 from .serializers import PuntoRecargaSerializer, ReservaSerializer
+from typing import Any
+from django.db.models.query import QuerySet
 
 class PuntoRecargaListAPIView(generics.ListAPIView):
     queryset = PuntoRecarga.objects.all()
@@ -13,7 +15,7 @@ class ReservaListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = ReservaSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
+    def get_queryset(self):  
         return Reserva.objects.filter(usuario=self.request.user, fecha_expiracion__gt=timezone.now())
 
     def create(self, request, *args, **kwargs):
