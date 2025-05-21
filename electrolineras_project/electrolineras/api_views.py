@@ -9,7 +9,7 @@ from django.db.models.query import QuerySet
 class PuntoRecargaListAPIView(generics.ListAPIView):
     queryset = PuntoRecarga.objects.all()
     serializer_class = PuntoRecargaSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]  # Cambiado de AllowAny a IsAuthenticated
 
 class ReservaListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = ReservaSerializer
