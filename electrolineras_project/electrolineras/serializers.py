@@ -5,11 +5,18 @@ class PuntoRecargaSerializer(serializers.ModelSerializer):
     reservado = serializers.SerializerMethodField()
     reservado_por = serializers.SerializerMethodField()
     fecha_expiracion = serializers.SerializerMethodField()
+    tipo_conector_nombre = serializers.SerializerMethodField()
 
     class Meta:
         model = PuntoRecarga
-        fields = '__all__'
-        extra_fields = ['reservado', 'reservado_por', 'fecha_expiracion']
+        fields = ('id', 'nombre', 'direccion', 'latitud', 'longitud', 
+                  'potencia_kw', 'tipo_conector', 'tipo_conector_nombre',
+                  'reservado', 'reservado_por', 'fecha_expiracion')
+    
+    def get_tipo_conector_nombre(self, obj):
+        if obj.tipo_conector:
+            return obj.tipo_conector.denominacion
+        return None
 
     def get_reservado(self, obj):
         from django.utils import timezone
