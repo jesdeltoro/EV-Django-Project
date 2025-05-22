@@ -1,16 +1,50 @@
 {% extends 'core/base.html' %}
 {% load static %}
+{% load pages_extras %}
 {% block title %}Inicio{% endblock %}
+
 {% block content %}
+<!-- Estilos para fondo de página completa -->
+<style>
+  /* Estilo para el fondo de pantalla completa */
+  #full-screen-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('{% static "core/img/cochescargando.png" %}');
+    background-size: cover;
+    background-position: center;
+    filter: blur(4px);
+    z-index: -100;
+  }
+  
+  /* Asegurar que el footer tenga fondo semitransparente */
+  footer.footer {
+    background-color: rgba(75, 0, 130, 0.7) !important;
+  }
+</style>
+
+<!-- Div de fondo de pantalla completa -->
+<div id="full-screen-background"></div>
+
+<!-- Script para aplicar estilo al footer -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const footer = document.querySelector('footer.footer');
+    if (footer) {
+      footer.style.backgroundColor = 'rgba(75, 0, 130, 0.7)';
+    }
+  });
+</script>
+
 <!-- Add Animate.css library -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 
 <!-- Hero Section with FIND/CHARGE/GO -->
-<div class="hero-section" style="background-color: rgba(75, 0, 130, 0.7); color: white; text-align: center; padding: 100px 20px; position: relative; overflow: hidden;">
-  <!-- Blurred background image -->
-  <div style="background-image: url('{% static 'core/img/cochescargando.png' %}'); background-size: cover; filter: blur(4px); position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: -1;"></div>
-  
-  <div class="container" style="position: relative; z-index: 1;">
+<div class="hero-section" style="background-color: rgba(75, 0, 130, 0.7); color: white; text-align: center; padding: 100px 0; position: relative; overflow: hidden; width: 100%;">
+  <div class="container">
     <div class="hero-text">
       <h1 style="font-size: 4.5rem; font-weight: 700; line-height: 1.2; margin-bottom: 1rem;">
         <div id="line1" class="hero-line" style="visibility: hidden;">CHAT<span class="slash" style="color: #4CD964;">/</span></div>
@@ -25,13 +59,72 @@
   </div>
 </div>
 
-<!-- Original Content Section -->
-<div class="container" style="background-color: #f8f5ff;">
-  <div style="padding-top:50px; text-align:center;">
-    <h1>{{page_title}}</h1>
-    <p class="lead">{{page_description}}</p>
+<!-- Blog Entries Section - modificado para ocupar todo el ancho -->
+<div style="background-color: rgba(75, 0, 130, 0.7); color: white; padding: 50px 0; width: 100%;">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2>Últimas Noticias</h2>
+      <p class="lead">Mantente informado sobre movilidad eléctrica</p>
+    </div>
+    
+    <div class="row" id="blog-container">
+      {% get_page_list as all_pages %}
+      {% for page in all_pages %}
+      <div class="col-md-4 mb-4 blog-item" style="display: {% if forloop.counter <= 3 %}block{% else %}none{% endif %};">
+        <div class="card h-100 blog-card" style="background-color: #c0a5e0; border-radius: 10px; visibility: hidden;" id="blog-card-{{ forloop.counter }}">
+          {% if page.image %}
+          <img src="{{ page.image.url }}" class="card-img-top" alt="{{ page.title }}" style="border-top-left-radius: 10px; border-top-right-radius: 10px; height: 180px; object-fit: cover;">
+          {% endif %}
+          <div class="card-body">
+            <h5 class="card-title" style="color: #4B0082; font-weight: bold;">{{ page.title }}</h5>
+            <div class="card-text-container" style="color: #000000 !important; font-weight: 500;">
+              {{ page.content|safe|truncatechars_html:100 }}
+            </div>
+          </div>
+          <div class="card-footer" style="background: transparent; border-top: 1px solid rgba(147, 112, 219, 0.3);">
+            <a href="{% url 'pages:page' page.id page.title|slugify %}" class="btn" style="background-color: #9370DB; color: white;">Leer más</a>
+            <small class="text-muted float-right mt-2" style="color: #4B0082 !important; font-weight: 500;">{{ page.created|date:"d/m/Y" }}</small>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center">
+        <p>Aún no hay entradas de blog.</p>
+      </div>
+      {% endfor %}
+    </div>
+    
+    <!-- Paginación -->
+    <div class="row">
+      <div class="col-12">
+        <div class="pagination-container text-center mt-4">
+          {% get_page_count as total_pages %}
+          {% if total_pages > 3 %}
+          <nav aria-label="Navegación de blogs">
+            <ul class="pagination justify-content-center" id="blog-pagination">
+              <li class="page-item disabled" id="prev-page">
+                <a class="page-link" href="#" style="background-color: #4B0082; color: white; border-color: #4B0082;">Anterior</a>
+              </li>
+              <li class="page-item active">
+                <a class="page-link" href="#" data-page="1" style="background-color: #9370DB; color: white; border-color: #4B0082;">1</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="#" data-page="2" style="color: #4B0082; border-color: #4B0082;">2</a>
+              </li>
+              <li class="page-item" id="next-page">
+                <a class="page-link" href="#" style="background-color: #4B0082; color: white; border-color: #4B0082;">Siguiente</a>
+              </li>
+            </ul>
+          </nav>
+          {% endif %}
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- Línea divisoria -->
+<div style="width: 100%; height: 3px; background: linear-gradient(to right, rgba(75, 0, 130, 0.2), rgba(75, 0, 130, 0.8), rgba(75, 0, 130, 0.2)); margin: 0;"></div>
 
 <!-- Animation Script -->
 <script>
@@ -44,14 +137,116 @@
       animateElement('line3', 'animate__fadeInLeft', 800);
       animateElement('line4', 'animate__fadeInRight', 1200);
       animateElement('tagline', 'animate__fadeInUp', 1600);
+      
+      // Animate blog cards
+      animateElement('blog-card-1', 'animate__fadeInLeft', 2000);
+      animateElement('blog-card-2', 'animate__fadeInUp', 2300);
+      animateElement('blog-card-3', 'animate__fadeInRight', 2600);
     }, 500);
     
     function animateElement(id, animationClass, delay) {
       setTimeout(function() {
         const element = document.getElementById(id);
-        element.style.visibility = "visible";
-        element.classList.add('animate__animated', animationClass);
+        if (element) {
+          element.style.visibility = "visible";
+          element.classList.add('animate__animated', animationClass);
+        }
       }, delay);
+    }
+  });
+  
+  // Paginación de blogs
+  document.addEventListener('DOMContentLoaded', function() {
+    const itemsPerPage = 3;
+    const blogItems = document.querySelectorAll('.blog-item');
+    const totalItems = blogItems.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    let currentPage = 1;
+    
+    // Botones de paginación
+    const prevButton = document.getElementById('prev-page');
+    const nextButton = document.getElementById('next-page');
+    const paginationLinks = document.querySelectorAll('.pagination .page-link[data-page]');
+    
+    function showPage(page) {
+      const start = (page - 1) * itemsPerPage;
+      const end = start + itemsPerPage;
+      
+      // Ocultar todos los items
+      blogItems.forEach((item, index) => {
+        item.style.display = 'none';
+      });
+      
+      // Mostrar solo los items de la página actual
+      for (let i = start; i < end && i < totalItems; i++) {
+        blogItems[i].style.display = 'block';
+        
+        // Asegurar que sean visibles para la animación
+        const cardId = 'blog-card-' + (i + 1);
+        const card = document.getElementById(cardId);
+        if (card) {
+          card.style.visibility = 'visible';
+          card.classList.add('animate__animated');
+          
+          // Aplicar animaciones según posición
+          if (i % 3 === 0) card.classList.add('animate__fadeInLeft');
+          else if (i % 3 === 1) card.classList.add('animate__fadeInUp');
+          else card.classList.add('animate__fadeInRight');
+        }
+      }
+      
+      // Actualizar estado de botones
+      prevButton.classList.toggle('disabled', page === 1);
+      nextButton.classList.toggle('disabled', page === totalPages);
+      
+      // Actualizar clase active en paginación
+      paginationLinks.forEach(link => {
+        const linkPage = parseInt(link.getAttribute('data-page'));
+        if (linkPage === page) {
+          link.parentElement.classList.add('active');
+          link.style.backgroundColor = '#9370DB';
+          link.style.color = 'white';
+        } else {
+          link.parentElement.classList.remove('active');
+          link.style.backgroundColor = '';
+          link.style.color = '#4B0082';
+        }
+      });
+      
+      currentPage = page;
+    }
+    
+    // Event listeners para los botones
+    if (prevButton) {
+      prevButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (currentPage > 1) {
+          showPage(currentPage - 1);
+        }
+      });
+    }
+    
+    if (nextButton) {
+      nextButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (currentPage < totalPages) {
+          showPage(currentPage + 1);
+        }
+      });
+    }
+    
+    // Event listeners para los links de página
+    paginationLinks.forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const page = parseInt(this.getAttribute('data-page'));
+        showPage(page);
+      });
+    });
+    
+    // Inicializar con la primera página
+    if (totalItems > 0) {
+      showPage(1);
     }
   });
 </script>

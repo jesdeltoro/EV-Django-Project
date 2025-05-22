@@ -162,7 +162,7 @@ TINYMCE_DEFAULT_CONFIG = {
 }
 
 # Auth redirects
-# LOGIN_REDIRECT_URL = 'pages:pages'
+LOGIN_REDIRECT_URL = 'home'  # Redirigir a la página de inicio después del login en lugar de al perfil
 LOGOUT_REDIRECT_URL = 'home'
 LOGIN_URL = '/accounts/login/'  # URL de login para redirigir a los usuarios no autenticados
 

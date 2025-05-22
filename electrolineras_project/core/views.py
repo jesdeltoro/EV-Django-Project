@@ -12,8 +12,8 @@ class HomePageView(TemplateView):
 #        context['page_description'] = "Electrolineras en España"
 #        return context 
     
-    def get(self, request, *args, **kwargs):
-        return render(request, self.template_name, {'page_title': 'Electrolineras', 'page_description': 'Electrolineras en España'})
+#    def get(self, request, *args, **kwargs):
+#        return render(request, self.template_name, {'page_title': 'Electrolineras', 'page_description': 'Electrolineras en España'})
 
 class SamplePageView(TemplateView):
     template_name = "core/sample.html"

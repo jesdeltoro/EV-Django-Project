@@ -12,6 +12,8 @@
     <link href="{% static 'core/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
     <link href="{% static 'core/vendor/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'core/css/main.css' %}" rel="stylesheet">
+    <!-- Tema Violeta -->
+    <link href="{% static 'core/css/purple_theme.css' %}" rel="stylesheet">
   </head>
   <body>
     <body>
@@ -70,6 +72,38 @@
       </nav>
       <!-- Contenido -->
       {% block content %}{% endblock %}
+      
+      <!-- Footer -->
+      <footer class="footer mt-auto py-3" style="background-color: #9370DB; color: white;">
+        <div class="container text-center">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <h5>EvEMaps</h5>
+              <p>Tu solución para encontrar y reservar puntos de recarga para vehículos eléctricos</p>
+            </div>
+            <div class="col-md-4 mb-3">
+              <h5>Enlaces Útiles</h5>
+              <ul class="list-unstyled">
+                <li><a href="{% url 'home' %}" class="text-white">Inicio</a></li>
+                <li><a href="{% url 'pages:pages' %}" class="text-white">Blog</a></li>
+                <li><a href="{% url 'mapa_puntos_recarga' %}" class="text-white">Mapa</a></li>
+              </ul>
+            </div>
+            <div class="col-md-4 mb-3">
+              <h5>Contacto</h5>
+              <p><i class="fa fa-envelope"></i> info@evemaps.com</p>
+              <p><i class="fa fa-phone"></i> +34 123 456 789</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <hr style="border-color: white;">
+              <p class="mb-0">&copy; 2025 EvEMaps. Todos los derechos reservados.</p>
+            </div>
+          </div>
+        </div>
+      </footer>
+      
       <!-- Javascript -->
       <script src="{% static 'core/vendor/jquery/jquery.min.js' %}"></script>
       <script src="{% static 'core/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
