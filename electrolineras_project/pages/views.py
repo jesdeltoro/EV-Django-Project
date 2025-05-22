@@ -10,13 +10,16 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.utils.decorators import method_decorator
 
 
-class StaffRequiredMixin(object):
+from django.views import View
+
+class StaffRequiredMixin(View):
     """
     Este mixin requerirá que el usuario sea miembro del staff
     """
     @method_decorator(staff_member_required)
     def dispatch(self, request, *args, **kwargs):
-        return super(StaffRequiredMixin, self).dispatch(request, *args, **kwargs)
+        # Usar la forma moderna de super() sin argumentos
+        return super().dispatch(request, *args, **kwargs)
     
 
 class PageListView(ListView):
@@ -40,7 +43,8 @@ class PageUpdate(UpdateView):
     form_class = PageForm
     template_name = 'pages/page_update_form.html'
     def get_success_url(self):
-        return reverse_lazy('pages:update', args=[self.object.id]) + '?ok'
+        obj = self.get_object()
+        return reverse_lazy('pages:update', args=[obj.pk]) + '?ok'
 
 @method_decorator(staff_member_required, name='dispatch')    
 class PageDelete(DeleteView):

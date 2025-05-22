@@ -11,19 +11,20 @@
 </script>
 
 {% if request.user.is_staff %}
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<!-- Navbar con estilo violeta -->
+<nav class="navbar navbar-expand-lg" style="background-color: rgba(75, 0, 130, 0.7); box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
     <div class="container">
-        <span class="navbar-brand"><i>Administrar</i></span>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nep" aria-controls="nep" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+        <span class="navbar-brand" style="color: white; font-weight: bold;"><i>Administrar</i></span>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nep" aria-controls="nep" aria-expanded="false" aria-label="Toggle navigation" style="border-color: white;">
+            <span class="navbar-toggler-icon" style="background-image: url('data:image/svg+xml;charset=utf8,%3Csvg viewBox=\'0 0 30 30\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath stroke=\'rgba(255, 255, 255, 0.8)\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-miterlimit=\'10\' d=\'M4 7h22M4 15h22M4 23h22\'/%3E%3C/svg%3E');"></span>
         </button>
         <div class="collapse navbar-collapse" id="nep">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'pages:create' %}"><i>Crear página</i></a>
+                    <a class="nav-link" href="{% url 'pages:create' %}" style="color: white; margin: 0 10px; font-weight: 500; transition: all 0.3s;"><i>Crear página</i></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'pages:pages' %}">Listar páginas</a>
+                    <a class="nav-link" href="{% url 'pages:pages' %}" style="color: white; margin: 0 10px; font-weight: 500; transition: all 0.3s;">Listar páginas</a>
                 </li>
             </ul>
         </div>

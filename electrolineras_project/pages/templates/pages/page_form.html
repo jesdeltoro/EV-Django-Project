@@ -5,28 +5,81 @@
 
 {% block content %}
 {% include 'pages/includes/pages_menu.html' %}
-<main role="main">
-    <div class="container">
-        <div class="row mt-3 mb-5">
-            <div class="col-md-9 mx-auto">
-                <!-- Display form errors if any -->
-                {% if form.errors %}
-                <div class="alert alert-danger">
-                    <strong>Error:</strong> Por favor corrige los errores indicados abajo.
-                </div>
-                {% endif %}
-                <form action="" method="POST" enctype="multipart/form-data" id="pageForm" novalidate>
-                    {% csrf_token %}
-                    {{ form.media }}
-                    {{ form.as_p }}
-                    <div class="text-center">
-                        <input type="submit" class="btn btn-primary btn-block" value="Crear página" name="submit_btn" />
-                    </div>
-                </form>
+
+<!-- Estilo para el formulario -->
+<style>
+  .form-container {
+    background-color: #c0a5e0;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    margin-bottom: 30px;
+  }
+  
+  .form-container label {
+    color: #4B0082;
+    font-weight: bold;
+  }
+  
+  .form-container input[type="text"],
+  .form-container textarea {
+    border: 1px solid #9370DB;
+    border-radius: 5px;
+    padding: 8px;
+  }
+  
+  .create-button {
+    background-color: #9370DB;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: all 0.3s;
+    width: 100%;
+  }
+  
+  .create-button:hover {
+    background-color: #4B0082;
+    transform: translateY(-2px);
+  }
+  
+  .error-message {
+    background-color: rgba(220, 53, 69, 0.2);
+    color: #721c24;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(220, 53, 69, 0.5);
+  }
+</style>
+
+<!-- Fondo violeta para toda la página -->
+<div style="background-color: rgba(75, 0, 130, 0.7); padding: 30px 0; min-height: 80vh; width: 100%;">
+  <div class="container">
+    <div class="row mt-3">
+      <div class="col-md-10 mx-auto">
+        <h2 class="text-center mb-4" style="color: white; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">Crear página</h2>
+        <div class="form-container">
+          <!-- Display form errors if any -->
+          {% if form.errors %}
+          <div class="error-message">
+            <strong>Error:</strong> Por favor corrige los errores indicados abajo.
+          </div>
+          {% endif %}
+          <form action="" method="POST" enctype="multipart/form-data" id="pageForm" novalidate>
+            {% csrf_token %}
+            {{ form.media }}
+            {{ form.as_p }}
+            <div class="text-center">
+              <input type="submit" class="create-button" value="Crear página" name="submit_btn" />
             </div>
+          </form>
         </div>
+      </div>
     </div>
-</main>
+  </div>
+</div>
 
 <!-- Script to fix TinyMCE form submission -->
 <script type="text/javascript">
@@ -46,5 +99,26 @@ document.addEventListener('DOMContentLoaded', function() {
         // e.preventDefault();
     });
 });
+</script>
+
+<!-- Script para asegurar que el footer llegue abajo -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    function adjustFooter() {
+      const body = document.body;
+      const html = document.documentElement;
+      const height = Math.max(body.scrollHeight, body.offsetHeight, 
+                            html.clientHeight, html.scrollHeight, html.offsetHeight);
+      const windowHeight = window.innerHeight;
+      
+      if (height < windowHeight) {
+        document.querySelector('footer').style.marginTop = (windowHeight - height) + 'px';
+      }
+    }
+    
+    // Ejecutar al cargar y al cambiar el tamaño de la ventana
+    adjustFooter();
+    window.addEventListener('resize', adjustFooter);
+  });
 </script>
 {% endblock %}

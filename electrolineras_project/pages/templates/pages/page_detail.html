@@ -3,21 +3,25 @@
 {% block title %}{{page.title}}{% endblock %}
 {% block content %}
 {% include 'pages/includes/pages_menu.html' %}
-<main role="main">
+
+<!-- Fondo violeta para toda la página -->
+<div class="bg-purple-gradient">
   <div class="container">
     <div class="row mt-3">
-      <div class="col-md-9 mx-auto">
-        <h2 class="section-heading mb-4">{{page.title}}</h2>
-        <div>
-          {{ page.content|safe }}
-          <!-- Ejemplo de imagen estática -->
-          <!-- <p><img src="../../static/core/img/cochescargando.png" width="50" height="50">&nbsp; Ahora s&iacute; parece que se ve&nbsp;</p> -->
+      <div class="col-md-10 mx-auto mb-5">
+        <h2 class="purple-title mb-4">{{page.title}}</h2>
+        <div class="page-detail-container">
+          <div class="page-detail-content">
+            {{ page.content|safe }}
+          </div>
           {% if request.user.is_staff %}
-            <p><a href="{% url 'pages:update' page.id %}">Editar</a></p>
+            <a href="{% url 'pages:update' page.id %}" class="page-edit-link">
+              <i class="fa fa-edit"></i> Editar
+            </a>
           {% endif %}
         </div>
       </div>
     </div>
   </div>
-</main>
+</div>
 {% endblock %}

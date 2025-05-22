@@ -112,7 +112,7 @@
             <strong>${point.nombre}</strong><br>
             ${point.direccion}<br>
             Potencia: ${point.potencia_kw} kW<br>
-            Conector: ${point.tipo_conector}<br>
+            Conector: ${point.tipo_conector} (${point.tipo_conector_nombre})<br>
           `;
           if (point.reservado) {
             popupContent += `<div style="margin-top:8px;"><strong>Reservado por: ${point.reservado_por || 'Desconocido'}</strong></div>`;
