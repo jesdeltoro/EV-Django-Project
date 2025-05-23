@@ -5,8 +5,10 @@
 
 {% block content %}
 <div style="background-color: rgba(75, 0, 130, 0.7); padding: 20px 0 30px 0;">
-  <div class="container">
-    <h1 style="color: white; margin-bottom: 20px;">Mapa de Puntos de Recarga</h1>
+  <div class="container">    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1 style="color: white;">Mapa de Puntos de Recarga</h1>
+    </div>
+    
     <div id="map" style="height: 600px; width: 100%; margin-bottom: 20px; border-radius: 5px;"></div>
   </div>
 </div>
@@ -15,6 +17,34 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+
+<!-- Estilos personalizados para los popups -->
+<style>
+  .custom-popup .leaflet-popup-content-wrapper {
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  .custom-popup .leaflet-popup-content {
+    margin: 12px;
+    line-height: 1.5;
+  }
+  
+  .custom-popup .leaflet-popup-tip {
+    background-color: white;
+  }
+  
+  /* Animación para la barra de progreso */
+  @keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+  }
+  
+  .charging-animation {
+    animation: pulse 2s infinite;
+  }
+</style>
 
 <!-- JavaScript de Leaflet y MarkerCluster -->
 <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
@@ -36,9 +66,7 @@
       }
     }
     return cookieValue;
-  }
-
-  function reservarPunto(puntoId, marker) {
+  }  function reservarPunto(puntoId, popupElement) {
     fetch('/electrolineras/api/reservas/', {
       method: 'POST',
       headers: {
@@ -48,15 +76,118 @@
       },
       body: JSON.stringify({ punto: puntoId })
     })
-    .then(response => response.json())
-    .then(data => {
-      if (data.detail) {
-        alert(data.detail);
-      } else {
-        alert('Reserva realizada con éxito');
-        marker.closePopup();
-        location.reload();
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(data => {
+          if (data.detail) {
+            // Verifica si hay info sobre sesión activa
+            if (data.sesion_actual) {
+              throw new Error(`${data.detail} Punto: ${data.sesion_actual.punto_nombre}`);
+            } 
+            // Verifica si hay info sobre reserva activa
+            else if (data.reserva_actual) {
+              const punto = data.reserva_actual.punto;
+              throw new Error(`${data.detail} Punto: ${punto.nombre}`);
+            } 
+            else {
+              throw new Error(data.detail);
+            }
+          }
+          throw new Error('Error al realizar la reserva');
+        });
       }
+      return response.json();
+    })
+    .then(data => {
+      alert('Reserva realizada con éxito');
+      // No intentamos cerrar el popup, simplemente recargamos
+      location.reload();
+    })
+    .catch(error => {
+      alert('Error: ' + error.message);
+    });
+  }  // Función para terminar la carga
+  function cancelarCarga(sesionId, popupElement) {
+    // Verificar que la sesión pertenece al usuario actual antes de intentar cancelarla
+    // Esta es una validación extra en el frontend, aunque la API también lo valida
+    fetch('/electrolineras/api/estado-carga/' + sesionId + '/')
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(data => {
+            throw new Error(data.error || 'Error al verificar la sesión de carga');
+          });
+        }
+        return response.json();
+      })      .then(data => {
+        // Si la sesión no pertenece al usuario actual, mostrar error
+        if (data.username !== '{{ user.username }}') {
+          throw new Error('No puedes terminar una carga iniciada por otro usuario');
+        }
+        
+        // Si la sesión pertenece al usuario, confirmar y proceder
+        if (confirm('¿Estás seguro de que quieres terminar esta carga?')) {
+          return fetch('/electrolineras/api/detener-carga/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ sesion_id: sesionId })
+          });
+        } else {
+          throw new Error('Operación cancelada por el usuario');
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(data => {
+            throw new Error(data.error || 'Error al finalizar la carga');
+          });
+        }
+        return response.json();
+      })
+      .then(data => {
+        alert('Carga finalizada con éxito');
+        // En lugar de intentar cerrar el popup, simplemente recargamos la página
+        location.reload();
+      })
+      .catch(error => {
+        alert('Error: ' + error.message);
+      });
+  }
+  // Función para iniciar la carga
+  function iniciarCarga(reservaId, popupElement) {
+    fetch('/electrolineras/api/iniciar-carga/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({ reserva_id: reservaId })
+    })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(data => {
+          // Formatear el mensaje de error para ser más claro
+          if (data.error) {
+            if (data.sesion_actual) {
+              throw new Error(`${data.error} Punto: ${data.sesion_actual.punto_nombre}`);
+            } else {
+              throw new Error(data.error);
+            }
+          }
+          throw new Error('Error al iniciar la carga');
+        });
+      }
+      return response.json();
+    })
+    .then(data => {
+      alert('Carga iniciada con éxito');
+      // En lugar de intentar cerrar el popup, simplemente recargamos la página
+      location.reload();
+    })
+    .catch(error => {
+      alert('Error: ' + error.message);
     });
   }
 
@@ -100,7 +231,6 @@
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
-
   // Función para obtener y mostrar los puntos de recarga
   function loadChargingPoints() {
     fetch('/electrolineras/api/puntos/')
@@ -114,19 +244,108 @@
             Potencia: ${point.potencia_kw} kW<br>
             Conector: ${point.tipo_conector} (${point.tipo_conector_nombre})<br>
           `;
-          if (point.reservado) {
+          
+          // Añadir información de estado con colores
+          let estadoStyle = "";
+          switch (point.estado) {
+            case 'disponible':
+              estadoStyle = "background-color: #28a745; color: white; padding: 3px 6px; border-radius: 3px;";
+              break;
+            case 'reservado':
+              estadoStyle = "background-color: #ffc107; color: black; padding: 3px 6px; border-radius: 3px;";
+              break;
+            case 'en_uso':
+              estadoStyle = "background-color: #dc3545; color: white; padding: 3px 6px; border-radius: 3px;";
+              break;
+            case 'offline':
+              estadoStyle = "background-color: #6c757d; color: white; padding: 3px 6px; border-radius: 3px;";
+              break;
+          }
+          
+          // Mostrar estado con estilo
+          popupContent += `<div style="margin-top: 5px;">Estado: <span style="${estadoStyle}">${point.estado.replace('_', ' ').toUpperCase()}</span></div>`;
+          
+          // Mostrar información de sesión si el punto está en uso
+          if (point.estado === 'en_uso' && point.sesion_actual) {            // Crear barra de progreso para la batería con IDs únicos para actualización dinámica
+            const porcentaje = point.sesion_actual.porcentaje_bateria;
+            const barraColor = porcentaje < 30 ? "#dc3545" : porcentaje < 75 ? "#ffc107" : "#28a745";
+            const sessionId = point.sesion_actual.id;
+            
+            popupContent += `
+              <div style="margin-top: 8px; border: 1px solid #ddd; padding: 8px; border-radius: 5px; background-color: #f8f9fa;">
+                <div style="margin-bottom: 5px;"><strong>Batería actual: <span id="bateria-${sessionId}">${porcentaje}%</span></strong></div>
+                <div style="background-color: #e9ecef; border-radius: 10px; height: 15px; overflow: hidden;">
+                  <div class="charging-animation" style="width: ${porcentaje}%; background-color: ${barraColor}; height: 100%; border-radius: 10px;"></div>
+                </div>
+                <div style="margin-top: 5px;">Energía consumida: <span id="energia-${sessionId}">${point.sesion_actual.energia_consumida.toFixed(2)} kWh</span></div>
+                <div>Tiempo activa: <span id="tiempo-${sessionId}">${point.sesion_actual.tiempo_activa} minutos</span></div>
+              </div>
+            `;
+          }
+            // Mostrar información de reserva solo si está reservado pero no en uso
+          if (point.reservado && point.estado !== 'en_uso') {
             popupContent += `<div style="margin-top:8px;"><strong>Reservado por: ${point.reservado_por || 'Desconocido'}</strong></div>`;
             if (point.fecha_expiracion) {
               const countdownId = `countdown-${point.id}`;
               popupContent += `<div><strong>Tiempo restante: <span id="${countdownId}"></span></strong></div>`;
             }
           }
+            // Botones de acción
+          let botonesAccion = '';
+          
+          // Botón "Cómo llegar" solo para puntos no en uso
+          if (point.estado !== 'en_uso') {
+            botonesAccion += `<a href="https://www.google.com/maps/dir/?api=1&destination=${point.latitud},${point.longitud}" target="_blank" style="padding: 6px 12px; background: #4B0082; color: #fff; border-radius: 4px; text-decoration: none; font-size: 14px;">Cómo llegar</a>`;
+          }
+            // Botón "Reservar" para puntos disponibles
+          if (!point.reservado && point.estado === 'disponible') {
+            botonesAccion += `<button onclick="reservarPunto('${point.id}', null)" style="padding: 6px 12px; background: #228B22; color: #fff; border-radius: 4px; text-decoration: none; font-size: 14px; border: none; cursor: pointer;">Reservar</button>`;
+          }          // Botón "Iniciar carga" para puntos reservados por el usuario actual
+          // Mostrar si: (el punto está explícitamente marcado como reservado O tiene una reserva activa)
+          // Y la reserva pertenece al usuario actual Y existe un reserva_id
+          if ((point.estado === 'reservado' || point.reservado === true) && 
+              point.reservado_por === '{{ user.username }}' && 
+              point.reserva_id) {
+            console.log('Punto con reserva del usuario actual:', point);
+            console.log('Reserva ID:', point.reserva_id);
+            botonesAccion += `<button onclick="iniciarCarga('${point.reserva_id}', null)" style="padding: 6px 12px; background: #007bff; color: #fff; border-radius: 4px; text-decoration: none; font-size: 14px; border: none; cursor: pointer;">Iniciar carga</button>`;
+          }          // Botón "Terminar carga" para puntos en uso - solo para el usuario propietario de la sesión
+          if (point.estado === 'en_uso' && point.sesion_actual) {
+            // Mostrar el usuario que está cargando
+            const usuarioCarga = point.sesion_actual.usuario || 'Desconocido';
+            popupContent += `<div style="margin-top: 8px;"><strong>Usuario: ${usuarioCarga}</strong></div>`;
+            
+            // Solo mostrar el botón terminar carga si el usuario logueado es el propietario de la sesión
+            // Utilizamos la propiedad "sesion_actual.usuario" que debe coincidir con el username actual
+            if (usuarioCarga === '{{ user.username }}') {
+              botonesAccion += `<button onclick="cancelarCarga('${point.sesion_actual.id}', null)" style="padding: 6px 12px; background: #dc3545; color: #fff; border-radius: 4px; text-decoration: none; font-size: 14px; border: none; cursor: pointer;">Terminar carga</button>`;
+            }
+          }
+          
           popupContent += `
             <div style="display: flex; justify-content: center; gap: 10px; margin-top: 8px;">
-              <a href="https://www.google.com/maps/dir/?api=1&destination=${point.latitud},${point.longitud}" target="_blank" style="padding: 6px 12px; background: #4B0082; color: #fff; border-radius: 4px; text-decoration: none; font-size: 14px;">Cómo llegar</a>
-              ${!point.reservado ? `<button onclick="reservarPunto('${point.id}', this.closest('.leaflet-popup'))" style="padding: 6px 12px; background: #228B22; color: #fff; border-radius: 4px; text-decoration: none; font-size: 14px; border: none; cursor: pointer;">Reservar</button>` : ''}
+              ${botonesAccion}
             </div>
           `;
+            // Crear el marcador con un popup personalizado según el estado
+          let borderColor;
+          switch (point.estado) {
+            case 'disponible':
+              borderColor = "#28a745"; // Verde
+              break;
+            case 'reservado':
+              borderColor = "#ffc107"; // Amarillo
+              break;
+            case 'en_uso':
+              borderColor = "#dc3545"; // Rojo
+              break;
+            case 'offline':
+              borderColor = "#6c757d"; // Gris
+              break;
+            default:
+              borderColor = "#007bff"; // Azul
+          }
+          
           var marker = L.marker([point.latitud, point.longitud], {
             icon: L.icon({
               iconUrl: "{% static 'electrolineras/img/electricar.png' %}",
@@ -134,11 +353,35 @@
               iconAnchor: [16, 32],
               popupAnchor: [0, -32]
             })
-          }).bindPopup(popupContent);
-
-          marker.on('popupopen', function() {
-            if (point.reservado && point.fecha_expiracion) {
+          }).bindPopup(popupContent, {
+            className: 'custom-popup',
+            maxWidth: 300,
+            minWidth: 250,
+            // Añadir borde de color según el estado
+            closeButton: true
+          });
+            // Añadir un estilo de borde personalizado al abrir el popup
+          marker.on('popupopen', function(e) {
+            // Añadir borde de color según el estado
+            const container = e.popup._container;
+            if (container) {
+              container.style.borderLeft = `5px solid ${borderColor}`;
+            }
+            
+            // Iniciar cuenta atrás de reserva si es necesario
+            if (point.reservado && point.fecha_expiracion && point.estado !== 'en_uso') {
               startCountdown(`countdown-${point.id}`, point.fecha_expiracion);
+            }
+            
+            // Iniciar actualización de datos en tiempo real para puntos en uso
+            if (point.estado === 'en_uso' && point.sesion_actual) {
+              // Guardar el ID del intervalo para limpiarlo cuando se cierre el popup
+              const intervalo = actualizarDatosEnTiempoReal(point, point.sesion_actual.id);
+              
+              // Limpiar el intervalo al cerrar el popup
+              marker.on('popupclose', function() {
+                clearInterval(intervalo);
+              });
             }
           });
 
@@ -148,8 +391,115 @@
       })
       .catch(error => console.error('Error al cargar los puntos de recarga:', error));
   }
-
   // Cargar los puntos de recarga al iniciar el mapa
   loadChargingPoints();
+    // Actualizar el mapa cada 10 segundos para reflejar cambios más rápidamente
+  setInterval(function() {
+    // Limpiar los marcadores existentes antes de recargar
+    map.eachLayer(function(layer) {
+      if (!!layer.toGeoJSON) {
+        map.removeLayer(layer);
+      }
+    });
+    // Recargar la capa de azulejos (tiles)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    
+    // Recargar puntos
+    loadChargingPoints();
+    console.log("Mapa actualizado - " + new Date().toLocaleTimeString());
+  }, 10000); // 10 segundos para una mejor experiencia
+  // Limpiar los intervalos de actualización previos para evitar duplicados
+  function limpiarIntervalo(sessionId) {
+    if (window[`intervalo-${sessionId}`]) {
+      clearInterval(window[`intervalo-${sessionId}`]);
+      window[`intervalo-${sessionId}`] = null;
+      console.log(`Intervalo para sesión ${sessionId} limpiado`);
+    }
+  }
+  
+  // Función para actualizar dinámicamente los valores de batería y tiempo
+  function actualizarDatosEnTiempoReal(point, sessionId) {
+    // Limpiar intervalo previo si existe
+    limpiarIntervalo(sessionId);
+
+    // Crear un ID único para los elementos que necesitamos actualizar
+    const bateriaId = `bateria-${sessionId}`;
+    const energiaId = `energia-${sessionId}`;
+    const tiempoId = `tiempo-${sessionId}`;
+
+    console.log(`Iniciando actualización para sesión ${sessionId}`);
+
+    // Consultar el estado de la carga cada 5 segundos
+    const intervaloActualizacion = setInterval(() => {
+      fetch(`/electrolineras/api/estado-carga/${sessionId}/`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Error en la respuesta del servidor');
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log(`Datos recibidos para sesión ${sessionId}:`, data);
+
+          // Verificar si los elementos existen antes de intentar actualizarlos
+          const bateriaElement = document.getElementById(bateriaId);
+          const energiaElement = document.getElementById(energiaId);
+          const tiempoElement = document.getElementById(tiempoId);
+
+          // Si ninguno de los elementos existe, detener el intervalo
+          if (!bateriaElement && !energiaElement && !tiempoElement) {
+            console.log(`Elementos para sesión ${sessionId} no encontrados, deteniendo actualización`);
+            limpiarIntervalo(sessionId);
+            return;
+          }
+
+          // Actualizar porcentaje de batería
+          if (bateriaElement) {
+            bateriaElement.textContent = `${data.porcentaje_bateria_actual}%`;
+
+            // Actualizar barra de progreso
+            // Buscar el siguiente div con clase 'charging-animation' dentro del mismo contenedor
+            let barraElement = bateriaElement.parentElement?.parentElement?.querySelector('.charging-animation');
+            if (barraElement) {
+              const porcentaje = data.porcentaje_bateria_actual;
+              const barraColor = porcentaje < 30 ? "#dc3545" : porcentaje < 75 ? "#ffc107" : "#28a745";
+              barraElement.style.width = `${porcentaje}%`;
+              barraElement.style.backgroundColor = barraColor;
+            } else {
+              console.log('No se encontró la barra de progreso para actualizar.');
+            }
+          }
+
+          // Actualizar energía consumida
+          if (energiaElement) {
+            energiaElement.textContent = `${data.energia_consumida.toFixed(2)} kWh`;
+          }
+          
+          // Actualizar tiempo activa
+          if (tiempoElement) {
+            tiempoElement.textContent = `${data.tiempo_carga} minutos`;
+          }
+          
+          // Si la sesión ya no está activa, detener las actualizaciones
+          if (!data.activa) {
+            console.log(`Sesión ${sessionId} ya no está activa, recargando página`);
+            limpiarIntervalo(sessionId);
+            location.reload(); // Recargar para actualizar el estado
+          }
+        })
+        .catch(error => {
+          console.error(`Error al actualizar datos de la sesión ${sessionId}:`, error);
+          limpiarIntervalo(sessionId);
+        });
+    }, 5000);
+    
+    // Guardar el ID del intervalo para poder limpiarlo
+    window[`intervalo-${sessionId}`] = intervaloActualizacion;
+    
+    // Retornar el ID del intervalo
+    return intervaloActualizacion;
+  }
 </script>
 {% endblock %}
