@@ -237,6 +237,8 @@
       .then(response => response.json())
       .then(data => {
         var markers = L.markerClusterGroup();
+        // Mapa para acceder a los marcadores por ID
+        window.puntoMarkers = {};
         data.forEach(point => {
           let popupContent = `
             <strong>${point.nombre}</strong><br>
@@ -357,10 +359,15 @@
             className: 'custom-popup',
             maxWidth: 300,
             minWidth: 250,
-            // Añadir borde de color según el estado
-            closeButton: true
+            closeButton: true,
+            autoClose: false,
+            closeOnClick: false
           });
-            // Añadir un estilo de borde personalizado al abrir el popup
+
+          // Guardar el marcador por ID para acceso rápido
+          window.puntoMarkers[point.id] = marker;
+
+          // Guardar el último popup abierto en localStorage
           marker.on('popupopen', function(e) {
             // Añadir borde de color según el estado
             const container = e.popup._container;
@@ -383,17 +390,35 @@
                 clearInterval(intervalo);
               });
             }
+
+            localStorage.setItem('ultimoPopupAbierto', point.id);
+          });
+
+          // Limpiar el estado cuando se cierra el popup
+          marker.on('popupclose', function(e) {
+            const ultimo = localStorage.getItem('ultimoPopupAbierto');
+            if (ultimo == point.id.toString()) {
+              localStorage.removeItem('ultimoPopupAbierto');
+            }
           });
 
           markers.addLayer(marker);
         });
         map.addLayer(markers);
+
+        // Si hay un popup guardado, reabrirlo
+        const ultimoPopup = localStorage.getItem('ultimoPopupAbierto');
+        if (ultimoPopup && window.puntoMarkers[ultimoPopup]) {
+          window.puntoMarkers[ultimoPopup].openPopup();
+        }
       })
       .catch(error => console.error('Error al cargar los puntos de recarga:', error));
   }
   // Cargar los puntos de recarga al iniciar el mapa
   loadChargingPoints();
-    // Actualizar el mapa cada 10 segundos para reflejar cambios más rápidamente
+
+  // Elimina o comenta este bloque para evitar que los popups desaparezcan
+  /*
   setInterval(function() {
     // Limpiar los marcadores existentes antes de recargar
     map.eachLayer(function(layer) {
@@ -410,6 +435,8 @@
     loadChargingPoints();
     console.log("Mapa actualizado - " + new Date().toLocaleTimeString());
   }, 10000); // 10 segundos para una mejor experiencia
+  */
+
   // Limpiar los intervalos de actualización previos para evitar duplicados
   function limpiarIntervalo(sessionId) {
     if (window[`intervalo-${sessionId}`]) {
