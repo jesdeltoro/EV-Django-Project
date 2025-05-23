@@ -1,0 +1,294 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Iniciar Carga{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="my-0">Iniciar Carga</h4>
+                </div>
+                <div class="card-body">
+                    {% if error %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endif %}
+                    
+                    <div id="apiErrorAlert" class="alert alert-danger" style="display: none;"></div>
+                    
+                    {% if reserva %}
+                        <h5>Reserva Activa</h5>
+                        <div class="mb-4">
+                            <p><strong>Punto de Recarga:</strong> {{ reserva.punto.nombre }}</p>
+                            <p><strong>Dirección:</strong> {{ reserva.punto.direccion }}</p>
+                            <p><strong>Potencia:</strong> {{ reserva.punto.potencia_kw }} kW</p>
+                            <p><strong>Tiempo restante de reserva:</strong> <span id="countdown">Calculando...</span></p>
+                            
+                            <hr>
+                            
+                            <div class="d-grid gap-2">
+                                <button id="btnIniciarCarga" class="btn btn-success btn-lg">
+                                    <i class="fas fa-plug"></i> Iniciar Carga
+                                </button>
+                                <!-- Botón adicional para depuración -->
+                                <button id="btnDebug" class="btn btn-secondary mt-2" type="button">
+                                    Diagnosticar API
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="cargaActiva" style="display: none;">
+                            <h5>Estado de la Carga</h5>
+                            <div class="progress mb-3" style="height: 30px;">
+                                <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                                     role="progressbar" style="width: 0%">0%</div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <p><strong>Batería:</strong> <span id="porcentajeBateria">0</span>%</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Energía consumida:</strong> <span id="energiaConsumida">0</span> kWh</p>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button id="btnDetenerCarga" class="btn btn-danger">
+                                    <i class="fas fa-stop-circle"></i> Detener Carga
+                                </button>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            No tienes ninguna reserva activa. Para iniciar una carga, primero debes reservar un punto de recarga.
+                        </div>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'mapa_puntos_recarga' %}" class="btn btn-primary">
+                                <i class="fas fa-map-marked-alt"></i> Ver Mapa de Puntos
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<!-- Script de depuración -->
+<script src="{% static 'electrolineras/js/debug.js' %}"></script>
+
+<script>
+    // Si hay una reserva, configuramos la cuenta regresiva
+    {% if reserva %}
+    // Función para actualizar el contador
+    function updateCountdown() {
+        // Fecha actual
+        const now = new Date();
+        // Fecha de expiración de la reserva
+        const expiration = new Date("{{ reserva.fecha_expiracion|date:'c' }}");
+        
+        // Tiempo restante en milisegundos
+        const timeLeft = expiration - now;
+        
+        if (timeLeft <= 0) {
+            document.getElementById('countdown').textContent = "¡Expirada!";
+            return;
+        }
+        
+        // Convertir a minutos y segundos
+        const minutes = Math.floor(timeLeft / 60000);
+        const seconds = Math.floor((timeLeft % 60000) / 1000);
+        
+        document.getElementById('countdown').textContent = 
+            minutes + " minutos, " + seconds + " segundos";
+    }
+    
+    // Actualizar cada segundo
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+    
+    // Variables para gestionar la sesión de carga
+    let sesionId = null;
+    let consultaInterval = null;
+    
+    // Función para mostrar errores de API
+    function mostrarError(mensaje) {
+        const alertElement = document.getElementById('apiErrorAlert');
+        alertElement.textContent = mensaje;
+        alertElement.style.display = 'block';
+        
+        // Ocultar después de 10 segundos
+        setTimeout(() => {
+            alertElement.style.display = 'none';
+        }, 10000);
+    }
+    
+    // Evento para iniciar carga
+    document.getElementById('btnIniciarCarga').addEventListener('click', function() {
+        // Deshabilitar botón mientras se procesa
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando...';
+        
+        // Obtener token CSRF
+        const csrfToken = getCookie('csrftoken');
+        console.log('CSRF Token:', csrfToken);
+        console.log('Iniciando carga para reserva ID:', {{ reserva.id }});
+        
+        // Llamada a la API para iniciar carga
+        fetch('/electrolineras/api/iniciar-carga/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                reserva_id: {{ reserva.id }}
+            })
+        })
+        .then(response => {
+            console.log('Estado de la respuesta:', response.status);
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Error desconocido');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Datos de respuesta:', data);
+            if (data.id) {
+                // Guardamos el ID de la sesión
+                sesionId = data.id;
+                
+                // Ocultamos el botón de iniciar y mostramos la sección de carga activa
+                document.getElementById('btnIniciarCarga').style.display = 'none';
+                document.getElementById('btnDebug').style.display = 'none';
+                document.getElementById('cargaActiva').style.display = 'block';
+                
+                // Iniciamos la consulta periódica del estado
+                consultaInterval = setInterval(consultarEstadoCarga, 5000);
+                consultarEstadoCarga(); // Primera consulta inmediata
+            } else {
+                // Mostrar error
+                mostrarError('Error: ' + (data.error || 'No se pudo iniciar la carga'));
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-plug"></i> Iniciar Carga';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarError('Error: ' + error.message);
+            this.disabled = false;
+            this.innerHTML = '<i class="fas fa-plug"></i> Iniciar Carga';
+        });
+    });
+    
+    // Botón de depuración
+    document.getElementById('btnDebug').addEventListener('click', function() {
+        console.log('Ejecutando diagnóstico de API...');
+        window.debugApi.probarIniciarCarga({{ reserva.id }})
+            .then(result => {
+                if (result && result.id) {
+                    alert('¡La API funciona correctamente! Sesión ID: ' + result.id);
+                } else {
+                    alert('Error en la API. Revisa la consola para más detalles.');
+                }
+            });
+    });
+    
+    // Evento para detener carga
+    document.getElementById('btnDetenerCarga').addEventListener('click', function() {
+        if (!sesionId) return;
+        
+        // Deshabilitar botón mientras se procesa
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deteniendo...';
+        
+        // Llamada a la API para detener carga
+        fetch('/electrolineras/api/detener-carga/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                sesion_id: sesionId
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Error desconocido');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Detenemos la consulta periódica
+            clearInterval(consultaInterval);
+            
+            // Mostrar resumen final
+            alert(`Carga finalizada:\n- Energía consumida: ${data.energia_consumida.toFixed(2)} kWh\n- Porcentaje final: ${data.porcentaje_bateria_actual}%`);
+            
+            // Redireccionar a la página principal o recargar
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarError('Error: ' + error.message);
+            this.disabled = false;
+            this.innerHTML = '<i class="fas fa-stop-circle"></i> Detener Carga';
+        });
+    });
+    
+    // Función para consultar estado de carga
+    function consultarEstadoCarga() {
+        if (!sesionId) return;
+        
+        fetch(`/electrolineras/api/estado-carga/${sesionId}/`)
+        .then(response => response.json())
+        .then(data => {
+            // Actualizar progreso
+            const porcentaje = data.porcentaje_bateria_actual;
+            document.getElementById('progressBar').style.width = porcentaje + '%';
+            document.getElementById('progressBar').textContent = porcentaje + '%';
+            
+            // Actualizar información
+            document.getElementById('porcentajeBateria').textContent = porcentaje;
+            document.getElementById('energiaConsumida').textContent = data.energia_consumida.toFixed(2);
+            
+            // Si la carga ya no está activa, detener la consulta
+            if (!data.activa) {
+                clearInterval(consultaInterval);
+                alert('La carga ha finalizado automáticamente.');
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error al consultar estado:', error);
+        });
+    }
+    
+    // Función para obtener cookie CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    {% endif %}
+</script>
+{% endblock %}
