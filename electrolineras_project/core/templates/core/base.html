@@ -80,13 +80,14 @@
             <div class="col-md-4 mb-3">
               <h5>EvEMaps</h5>
               <p>Tu solución para encontrar y reservar puntos de recarga para vehículos eléctricos</p>
-            </div>
-            <div class="col-md-4 mb-3">
+            </div>            <div class="col-md-4 mb-3">
               <h5>Enlaces Útiles</h5>
               <ul class="list-unstyled">
                 <li><a href="{% url 'home' %}" class="text-white">Inicio</a></li>
                 <li><a href="{% url 'pages:pages' %}" class="text-white">Blog</a></li>
+                {% if request.user.is_authenticated %}
                 <li><a href="{% url 'mapa_puntos_recarga' %}" class="text-white">Mapa</a></li>
+                {% endif %}
               </ul>
             </div>
             <div class="col-md-4 mb-3">
