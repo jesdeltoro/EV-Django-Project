@@ -1,7 +1,7 @@
 # DOCUMENTACIÓN TÉCNICA
 ## SISTEMA DE GESTIÓN DE ELECTROLINERAS
 ### Trabajo Fin de Grado - FP DAM
-### Autor: Jesús del Toro
+### Autor: Julio Schneider Estop
 ### Fecha: Mayo 2024
 
 ---
