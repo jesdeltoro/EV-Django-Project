@@ -6,6 +6,10 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 from django import forms
 from .models import Profile
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib.auth.models import User
+from typing import cast
 
 # Create your views here.
 class SignUpView(CreateView):
@@ -13,7 +17,43 @@ class SignUpView(CreateView):
     template_name = 'registration/signup.html'
 
     def get_success_url(self):
-        return reverse_lazy('login') + '?register'   
+        return reverse_lazy('login') + '?register'
+
+    def form_valid(self, form):
+        # Primero, crear el usuario
+        response = super().form_valid(form)
+        
+        # Luego, enviar email de bienvenida  
+        user = form.save()
+        try:
+            send_mail(
+                subject='¡Bienvenido al Sistema de Electrolineras!',
+                message=f'''¡Hola {user.username}!
+
+¡Bienvenido al Sistema de Gestión de Electrolineras!
+
+Tu cuenta ha sido creada exitosamente. Ya puedes iniciar sesión y comenzar a:
+- Localizar puntos de recarga en el mapa
+- Realizar reservas de puntos de carga
+- Gestionar tus sesiones de carga
+- Actualizar tu perfil personal
+
+Datos de tu cuenta:
+- Usuario: {user.username}
+- Email: {user.email}
+
+¡Gracias por unirte a nosotros!
+
+Equipo del Sistema de Electrolineras''',
+                from_email=settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'noreply@electrolineras.com',
+                recipient_list=[user.email],
+                fail_silently=True,  # No fallar si hay problemas con el email
+            )
+        except Exception as e:
+            # Si hay algún error con el email, no afectar el registro
+            print(f"Error enviando email de bienvenida: {e}")
+        
+        return response
 
     def get_form(self, form_class=None):
         form = super(SignUpView, self).get_form()
@@ -35,7 +75,7 @@ class ProfileUpdate(UpdateView):
     success_url = reverse_lazy('profile')
     template_name = 'registration/profile_form.html'
 
-    def get_object(self):
+    def get_object(self, queryset=None):
         # recuperar el objeto que se va editar
         profile, created = Profile.objects.get_or_create(user=self.request.user)
         return profile
@@ -46,9 +86,9 @@ class EmailUpdate(UpdateView):
     success_url = reverse_lazy('profile')
     template_name = 'registration/profile_email_form.html'
 
-    def get_object(self):
+    def get_object(self, queryset=None) -> User:
         # recuperar el objeto que se va editar
-        return self.request.user
+        return cast(User, self.request.user)
 
     def get_form(self, form_class=None):
         form = super(EmailUpdate, self).get_form()
