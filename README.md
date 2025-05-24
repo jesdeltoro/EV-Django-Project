@@ -9,7 +9,7 @@
 ## 1. INTRODUCCIÓN Y OBJETIVOS
 
 ### 1.1 Descripción del Proyecto
-El proyecto "Sistema de Gestión de Electrolineras" es una aplicación web desarrollada en Django que permite gestionar puntos de recarga para vehículos eléctricos. La aplicación facilita a los usuarios localizar, reservar y gestionar sesiones de carga en electrolineras, proporcionando un sistema completo de gestión en tiempo real.
+El proyecto "Sistema de Gestión de Electrolineras" es una aplicación web desarrollada en Django que permite gestionar puntos de recarga para vehículos eléctricos. La aplicación facilita a los usuarios localizar, reservar y utilizar puntos de carga mediante una interfaz web intuitiva y un API REST para integraciones móviles.
 
 ### 1.2 Objetivos Principales
 - **Localización de puntos de carga**: Mapa interactivo con ubicaciones de electrolineras
@@ -19,7 +19,7 @@ El proyecto "Sistema de Gestión de Electrolineras" es una aplicación web desar
 - **API REST**: Servicios web para integración con aplicaciones móviles
 
 ### 1.3 Justificación
-Con el crecimiento del parque de vehículos eléctricos, existe una necesidad real de sistemas que faciliten la gestión y uso de infraestructuras de carga. Este proyecto simula un sistema profesional que podría implementarse en entornos reales.
+Con el crecimiento del parque de vehículos eléctricos, existe una necesidad real de sistemas que faciliten la gestión y uso de infraestructuras de carga. Este proyecto simula un sistema profesional que podría implementarse en el mundo real.
 
 ---
 
@@ -58,8 +58,118 @@ electrolineras_project/
 ├── profiles/               # Perfiles de usuario
 ├── registration/           # Sistema de registro
 ├── messenger/              # Sistema de mensajería
-└── pages/                  # Páginas estáticas
+└── pages/                  # Páginas estáticas y blog
 ```
+
+### 2.3 Aplicaciones del Sistema
+
+#### 📝 Aplicación Pages (Gestión de Blog)
+**Propósito**: Sistema de gestión de contenido para noticias y blog del sitio web.
+
+**Funcionalidades principales:**
+- **Editor TinyMCE integrado** para contenido enriquecido con formato HTML
+- **Sistema de permisos restringido** a usuarios staff para crear/editar contenido
+- **CRUD completo** (Crear, Leer, Actualizar, Eliminar) para páginas de blog
+- **Visualización paginada** en la página principal con últimas noticias
+- **Orden personalizable** de entradas mediante campo de orden
+- **Timestamps automáticos** de creación y última edición
+- **Integración visual** con tema violeta del sitio web
+
+**Modelo Page:**
+```python
+class Page(models.Model):
+    title = models.CharField(max_length=200)
+    content = HTMLField()  # Campo TinyMCE para contenido enriquecido
+    order = models.SmallIntegerField(default=0)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+```
+
+**URLs principales:**
+- `/pages/` - Lista de todas las páginas del blog
+- `/pages/create/` - Crear nueva página (solo staff)
+- `/pages/<id>/<slug>/` - Ver página específica
+- `/pages/update/<id>/` - Editar página (solo staff)
+
+#### 💬 Aplicación Messenger (Sistema de Mensajería)
+**Propósito**: Sistema de mensajería privada entre usuarios registrados del sistema.
+
+**Funcionalidades principales:**
+- **Hilos de conversación privados** entre pares de usuarios
+- **Mensajes en tiempo real** mediante AJAX sin recargar la página
+- **Interfaz de chat moderna** con burbujas diferenciadas por usuario
+- **Validación de permisos** que previene acceso no autorizado a conversaciones
+- **ThreadManager personalizado** para encontrar o crear hilos automáticamente
+- **Actualización automática** de timestamps de última actividad
+- **Navegación fluida** entre diferentes conversaciones activas
+- **Scroll automático** a mensajes más recientes
+
+**Modelos principales:**
+```python
+class Message(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
+    created = models.DateTimeField(auto_now_add=True)
+
+class Thread(models.Model):
+    users = models.ManyToManyField(User, related_name='threads')
+    messages = models.ManyToManyField(Message)
+    updated = models.DateTimeField(auto_now=True)
+    objects = ThreadManager()
+```
+
+**Características técnicas avanzadas:**
+- **Signal handlers** para validar que solo usuarios del hilo pueden enviar mensajes
+- **AJAX endpoints** para envío asíncrono de mensajes
+- **JavaScript dinámico** para actualización de interfaz en tiempo real
+- **Gestión de estados** para el botón de envío
+
+**URLs principales:**
+- `/messenger/` - Lista de conversaciones del usuario
+- `/messenger/thread/<id>/` - Conversación específica
+- `/messenger/thread/<id>/add/` - Enviar mensaje (AJAX)
+- `/messenger/thread/start/<username>/` - Iniciar nueva conversación
+
+#### 🔐 Aplicación Registration (Registro y Perfiles)
+**Propósito**: Sistema completo de autenticación, registro de usuarios y gestión de perfiles.
+
+**Funcionalidades principales:**
+- **Registro personalizado** con email obligatorio y validación de unicidad
+- **Gestión completa de perfiles** con avatar, biografía, enlace web y alias
+- **Formularios Django personalizados** con validación avanzada y styling
+- **Actualización separada de email** con verificación anti-duplicados
+- **Creación automática de perfil** mediante Django signals
+- **Validación robusta** de contraseñas y datos de entrada
+- **Integración visual** con el tema del sitio web
+- **Gestión de archivos** para avatares con reemplazo automático
+
+**Modelo Profile:**
+```python
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    avatar = models.ImageField(upload_to=custom_upload_to, null=True, blank=True)
+    bio = models.TextField(null=True, blank=True)
+    link = models.URLField(max_length=200, null=True, blank=True)
+    alias = models.CharField(max_length=100, null=True, blank=True, unique=True)
+```
+
+**Formularios especializados:**
+- **UserCreationFormWithEmail**: Extiende el formulario base añadiendo email obligatorio
+- **ProfileForm**: Gestión completa del perfil del usuario
+- **EmailForm**: Actualización específica y validada del email
+
+**Características técnicas:**
+- **Django signals** para creación automática de perfil al registrar usuario
+- **Validación personalizada** en formularios para prevenir duplicados
+- **Upload personalizado** de avatares con eliminación del anterior
+- **Decoradores de seguridad** para proteger vistas sensibles
+
+**URLs principales:**
+- `/accounts/signup/` - Registro de nuevos usuarios
+- `/accounts/profile/` - Editar perfil completo
+- `/accounts/profile/email/` - Actualizar solo email
+- `/accounts/login/` - Inicio de sesión
+- `/accounts/password_change/` - Cambio de contraseña
 
 ---
 
@@ -121,6 +231,9 @@ class SesionCarga(models.Model):
 - **PuntoRecarga ↔ Reserva**: Relación uno a muchos
 - **Reserva ↔ SesionCarga**: Relación uno a uno
 - **Conector ↔ PuntoRecarga**: Relación uno a muchos
+- **Usuario ↔ Profile**: Relación uno a uno (registration)
+- **Usuario ↔ Thread**: Relación muchos a muchos (messenger)
+- **Thread ↔ Message**: Relación muchos a muchos (messenger)
 
 ---
 
@@ -162,6 +275,24 @@ class SesionCarga(models.Model):
 - **Servicios de consulta** de puntos de carga
 - **Gestión de reservas** vía API
 - **Documentación automática** de endpoints
+
+### 4.7 Sistema de Blog y Contenido (Pages)
+- **Gestión de noticias** relacionadas con movilidad eléctrica
+- **Editor enriquecido** con TinyMCE para contenido formateado
+- **Publicación restringida** solo a usuarios staff autorizados
+- **Visualización paginada** en página principal con últimas entradas
+
+### 4.8 Sistema de Mensajería (Messenger)
+- **Comunicación privada** entre usuarios registrados
+- **Interfaz de chat** moderna y responsiva
+- **Mensajería en tiempo real** sin recargar página
+- **Gestión segura** de permisos por conversación
+
+### 4.9 Gestión Avanzada de Usuarios (Registration)
+- **Registro con email único** y validación robusta
+- **Perfiles completos** con avatar, biografía y enlaces
+- **Actualización granular** de datos de usuario
+- **Integración automática** entre usuario y perfil
 
 ---
 
@@ -386,6 +517,8 @@ TIME_ZONE = 'Europe/Madrid'
 /profiles/          # Perfiles de usuario
 /api/token/         # API de autenticación
 /electrolineras/    # Gestión de puntos
+/pages/             # Blog y noticias
+/messenger/         # Sistema de mensajería
 ```
 
 ---
