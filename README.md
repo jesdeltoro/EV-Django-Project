@@ -294,6 +294,31 @@ class SesionCarga(models.Model):
 - **Actualización granular** de datos de usuario
 - **Integración automática** entre usuario y perfil
 
+### 4.10 Sistema de Comandos de Management
+- **Actualización automática de baterías** mediante comando `actualizar_baterias`
+- **Simulación en tiempo real** del progreso de carga de vehículos
+- **Monitorización continua** de sesiones activas con logs detallados
+- **Configuración flexible** de intervalos de actualización
+- **Notificaciones automáticas** cuando las baterías alcanzan el 100%
+- **Gestión de procesos** en segundo plano para automatización del sistema
+- **Scripts de mantenimiento** para corrección de estados y verificaciones
+
+**Comando principal:**
+```bash
+# Ejecutar simulador de carga con intervalo por defecto (60 segundos)
+python manage.py actualizar_baterias
+
+# Ejecutar con intervalo personalizado
+python manage.py actualizar_baterias --intervalo 30
+```
+
+**Funcionalidades del comando:**
+- Actualiza automáticamente el porcentaje de batería de todas las sesiones activas
+- Simula el proceso real de carga de vehículos eléctricos
+- Proporciona feedback en tiempo real sobre el progreso de cada sesión
+- Detecta automáticamente cuando las baterías alcanzan el 100%
+- Permite configurar la frecuencia de actualización según necesidades
+
 ---
 
 ## 5. ARQUITECTURA DE SOFTWARE
