@@ -43,9 +43,11 @@ INSTALLED_APPS = [
     'profiles',
     'core',
     'messenger',
+    'payments',  # Nueva aplicación de pagos
     'rest_framework',
     'pages.apps.PagesConfig',
     'tinymce',  # Add TinyMCE to installed apps
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -57,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'electrolineras_project.urls'
@@ -189,3 +192,18 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+
+# Configuración de Stripe
+# IMPORTANTE: En producción, estas claves deben estar en variables de entorno
+# Las claves mostradas aquí son de PRUEBA y deben ser reemplazadas
+
+# Claves de prueba de Stripe (reemplazar con las reales)
+STRIPE_PUBLISHABLE_KEY = 'pk_test_51RSBOfQFcvigGkXXijjkijmBd62X9byrfX8BA9NLUARc60ZwoaqvrNx9DkcwEZqahbjnIFhn2H5eDUSKYIzf7fMH00K6OcsDPl'  # Clave pública de prueba
+STRIPE_SECRET_KEY = 'sk_test_51RSBOfQFcvigGkXXhDJXIRboYegLXYXKqEY06QB40Mhah3qL87aG8CDpx9vFM4egiJ4M2Wt9LNCM4a018yQEdFHr00nYJvh5A7'       # Clave secreta de prueba
+STRIPE_WEBHOOK_SECRET = 'work-wows-warmer-hail'  # Secreto del webhook actualizado
+
+# Configuración del sistema de pagos
+PAYMENT_PER_KWH = 0.30  # Precio por kWh en euros (fácilmente ajustable)
+PAYMENT_CURRENCY = 'eur'  # Moneda para los pagos
+PAYMENT_SUCCESS_URL = 'http://localhost:8000/payments/success/'  # URL de éxito
+PAYMENT_CANCEL_URL = 'http://localhost:8000/payments/cancel/'    # URL de cancelación

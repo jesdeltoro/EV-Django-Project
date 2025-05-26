@@ -1,0 +1,197 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Pagar Factura  {{ factura_id }}{% endblock %}
+
+{% block content %}
+{% if debug %}
+  <div class="alert alert-info">
+    <strong>DEBUG:</strong><br>
+    stripe_publishable_key: {{ stripe_publishable_key }}<br>
+    factura_id: {{ factura_id }}<br>
+    factura_numero: {{ factura_numero }}<br>
+    factura_total: {{ factura_total }}<br>
+    factura_energia: {{ factura_energia }}<br>
+    mostrar_formulario: {{ mostrar_formulario }}<br>
+    user: {{ request.user }}<br>
+    <!-- Datos necesarios para Stripe -->
+    <hr>
+    <strong>Datos necesarios para la barra de tarjeta:</strong><br>
+    Clave pública Stripe (stripe_publishable_key): <code>{{ stripe_publishable_key }}</code><br>
+    <!-- El div donde Stripe montará el elemento de tarjeta: -->
+    ID del div: <code>card-element</code>
+  </div>
+{% endif %}
+<div class="container" style="max-width: 500px; margin: 40px auto;">
+  {% if not stripe_publishable_key %}
+    <div class="alert alert-danger mb-4">
+      Error de configuración: Falta la clave pública de Stripe. Contacte con el administrador.
+    </div>
+  {% endif %}
+  {% if error_mensaje %}
+    <div class="alert alert-danger mb-4">
+      {{ error_mensaje }}
+    </div>
+    <p>
+      <a href="{% url 'payments:facturas' %}" class="btn btn-primary">Ver mis facturas</a>
+    </p>
+  {% else %}
+    <h2 class="mb-4">Pagar Factura {{ factura_numero }}</h2>
+    <p><strong>Total:</strong> {{ factura_total }} EUR</p>
+    <p><strong>Energía consumida:</strong> {{ factura_energia }} kWh</p>
+    <!-- FORZAMOS QUE SIEMPRE SE MUESTRE EL FORMULARIO -->
+    <div id="payment-form">
+      <form id="payment-form-el">
+        <div class="form-group mb-3">
+          <label for="card-element" class="fw-bold mb-2">Datos de la tarjeta:</label>
+          <div id="card-element">
+            <!-- Stripe injects the card element here -->
+          </div>
+          <div id="card-errors" role="alert"></div>
+          <small class="form-text text-muted">Ingrese los datos de su tarjeta de crédito o débito</small>
+        </div>
+        <button id="submit" class="btn btn-primary btn-lg btn-block w-100 mt-3">
+          <span class="spinner-border spinner-border-sm me-2 d-none" role="status" id="submit-spinner"></span>
+          Pagar
+        </button>
+      </form>
+    </div>
+    <div id="payment-success" class="alert alert-success mt-4" style="display:none;">
+      ¡Pago realizado con éxito! Gracias.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script src="https://js.stripe.com/v3/"></script>
+<style>
+  .StripeElement {
+    box-sizing: border-box;
+    height: 40px;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    margin-bottom: 10px;
+  }
+
+  .StripeElement--focus {
+    box-shadow: 0 1px 3px 0 #cfd7df;
+  }
+
+  .StripeElement--invalid {
+    border-color: #fa755a;
+  }
+
+  .StripeElement--webkit-autofill {
+    background-color: #fefde5 !important;
+  }
+
+  #card-errors {
+    color: #dc3545;
+    margin-top: 8px;
+    font-size: 0.875rem;
+  }
+</style>
+<script>
+  // Función para obtener cookies (para CSRF token)
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var stripe = Stripe('{{ stripe_publishable_key }}');
+    var elements = stripe.elements();
+    var card = elements.create('card');
+    card.mount('#card-element');
+
+    card.on('change', function(event) {
+      var displayError = document.getElementById('card-errors');
+      displayError.textContent = event.error ? event.error.message : '';
+    });
+
+    var form = document.getElementById('payment-form-el');
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+      document.getElementById('submit').disabled = true;
+      fetch('{% url "payments:crear_payment_intent" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+          factura_id: '{{ factura_id }}'
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (!data.client_secret) {
+          alert('Error: ' + (data.error || 'No se pudo crear el PaymentIntent.'));
+          document.getElementById('submit').disabled = false;
+          return;
+        }
+        var clientSecret = data.client_secret;
+        stripe.confirmCardPayment(clientSecret, {
+          payment_method: {
+            card: card
+          }
+        }).then(function(result) {
+          if (result.error) {
+            document.getElementById('card-errors').textContent = result.error.message;
+            document.getElementById('submit').disabled = false;          } else {
+            if (result.paymentIntent.status === 'succeeded') {
+              // Confirmamos el pago en el backend
+              fetch('/payments/api/confirmar-pago/', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                  payment_intent_id: result.paymentIntent.id
+                })
+              })
+              .then(response => response.json())              .then(data => {
+                if (data.status === 'success') {
+                  console.log('Pago confirmado en el backend');
+                  // Mostramos el mensaje de éxito
+                  document.getElementById('payment-form').style.display = 'none';
+                  document.getElementById('payment-success').style.display = 'block';
+                  
+                  // Esperamos 2 segundos y redirigimos a la página de facturas
+                  setTimeout(function() {
+                    window.location.href = '{% url "payments:facturas" %}?estado=pagada';
+                  }, 2000);
+                } else {
+                  console.error('Error confirmando pago en backend:', data.error || data.mensaje);
+                  document.getElementById('payment-form').style.display = 'none';
+                  document.getElementById('payment-success').style.display = 'block';
+                }
+              })
+              .catch(error => {
+                console.error('Error confirmando pago:', error);
+                // Mostramos el mensaje de éxito de todos modos ya que el pago fue exitoso en Stripe
+                document.getElementById('payment-form').style.display = 'none';
+                document.getElementById('payment-success').style.display = 'block';
+              });
+            }
+          }
+        });
+      });
+    });
+  });
+</script>
+{% endblock %}

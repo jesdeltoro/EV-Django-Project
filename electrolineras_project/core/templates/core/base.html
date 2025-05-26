@@ -35,9 +35,11 @@
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'pages:pages' %}">Blog</a>
               </li>
-              {% if request.user.is_authenticated %}
-              <li class="nav-item">
+              {% if request.user.is_authenticated %}              <li class="nav-item">
                 <a class="nav-link" href="{% url 'mapa_puntos_recarga' %}">Mapa</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'payments:facturas' %}">Mis Facturas</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'profiles:list' %}">Perfiles</a>
@@ -82,11 +84,11 @@
               <p>Tu solución para encontrar y reservar puntos de recarga para vehículos eléctricos</p>
             </div>            <div class="col-md-4 mb-3">
               <h5>Enlaces Útiles</h5>
-              <ul class="list-unstyled">
-                <li><a href="{% url 'home' %}" class="text-white">Inicio</a></li>
+              <ul class="list-unstyled">                <li><a href="{% url 'home' %}" class="text-white">Inicio</a></li>
                 <li><a href="{% url 'pages:pages' %}" class="text-white">Blog</a></li>
                 {% if request.user.is_authenticated %}
                 <li><a href="{% url 'mapa_puntos_recarga' %}" class="text-white">Mapa</a></li>
+                <li><a href="{% url 'payments:facturas' %}" class="text-white">Mis Facturas</a></li>
                 {% endif %}
               </ul>
             </div>
@@ -109,5 +111,6 @@
       <script src="{% static 'core/vendor/jquery/jquery.min.js' %}"></script>
       <script src="{% static 'core/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
       <script src="{% static 'core/js/main.js' %}"></script>
+      {% block extrajs %}{% endblock %}
   </body>
 </html>

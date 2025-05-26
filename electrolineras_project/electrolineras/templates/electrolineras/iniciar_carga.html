@@ -54,12 +54,6 @@
                                     <p><strong>Energía consumida:</strong> <span id="energiaConsumida">0</span> kWh</p>
                                 </div>
                             </div>
-                            
-                            <div class="d-grid gap-2">
-                                <button id="btnDetenerCarga" class="btn btn-danger">
-                                    <i class="fas fa-stop-circle"></i> Detener Carga
-                                </button>
-                            </div>
                         </div>
                     {% else %}
                         <div class="alert alert-warning">
@@ -170,8 +164,13 @@
                 document.getElementById('btnDebug').style.display = 'none';
                 document.getElementById('cargaActiva').style.display = 'block';
                 
-                // Iniciamos la consulta periódica del estado
-                consultaInterval = setInterval(consultarEstadoCarga, 5000);
+                // Asegurarse de que la función consultarEstadoCarga se ejecuta periódicamente
+                if (!consultaInterval) {
+                    console.log('⏱️ Configurando intervalo para consultar estado de carga cada 5 segundos');
+                    consultaInterval = setInterval(consultarEstadoCarga, 5000);
+                }
+
+                // Llamar a consultarEstadoCarga inmediatamente para evitar retrasos iniciales
                 consultarEstadoCarga(); // Primera consulta inmediata
             } else {
                 // Mostrar error
@@ -201,51 +200,9 @@
             });
     });
     
-    // Evento para detener carga
-    document.getElementById('btnDetenerCarga').addEventListener('click', function() {
-        if (!sesionId) return;
-        
-        // Deshabilitar botón mientras se procesa
-        this.disabled = true;
-        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deteniendo...';
-        
-        // Llamada a la API para detener carga
-        fetch('/electrolineras/api/detener-carga/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify({
-                sesion_id: sesionId
-            })
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(data => {
-                    throw new Error(data.error || 'Error desconocido');
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            // Detenemos la consulta periódica
-            clearInterval(consultaInterval);
-            
-            // Mostrar resumen final
-            alert(`Carga finalizada:\n- Energía consumida: ${data.energia_consumida.toFixed(2)} kWh\n- Porcentaje final: ${data.porcentaje_bateria_actual}%`);
-            
-            // Redireccionar a la página principal o recargar
-            window.location.reload();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            mostrarError('Error: ' + error.message);
-            this.disabled = false;
-            this.innerHTML = '<i class="fas fa-stop-circle"></i> Detener Carga';
-        });
-    });
-    
+    // Eliminar lógica redundante de actualización de barra de progreso y consulta de estado
+    // Mantener solo la lógica para iniciar y detener la carga
+
     // Función para consultar estado de carga
     function consultarEstadoCarga() {
         if (!sesionId) return;
@@ -253,20 +210,50 @@
         fetch(`/electrolineras/api/estado-carga/${sesionId}/`)
         .then(response => response.json())
         .then(data => {
-            // Actualizar progreso
+            // Agregar mensajes de depuración para verificar la actualización de la barra de progreso
             const porcentaje = data.porcentaje_bateria_actual;
-            document.getElementById('progressBar').style.width = porcentaje + '%';
-            document.getElementById('progressBar').textContent = porcentaje + '%';
+            console.log(`🔋 Actualizando barra de progreso: ${porcentaje}%`);
             
-            // Actualizar información
-            document.getElementById('porcentajeBateria').textContent = porcentaje;
-            document.getElementById('energiaConsumida').textContent = data.energia_consumida.toFixed(2);
+            // Actualizar el ancho de la barra de progreso
+            const progressBar = document.getElementById('progressBar');
+            if (progressBar) {
+                progressBar.style.width = porcentaje + '%';
+                progressBar.textContent = porcentaje + '%';
+                console.log('✅ Barra de progreso actualizada correctamente');
+            } else {
+                console.error('❌ No se encontró el elemento de la barra de progreso');
+            }
+            
+            // Actualizar información adicional
+            const porcentajeBateria = document.getElementById('porcentajeBateria');
+            if (porcentajeBateria) {
+                porcentajeBateria.textContent = porcentaje;
+                console.log('✅ Porcentaje de batería actualizado en la interfaz');
+            } else {
+                console.error('❌ No se encontró el elemento para mostrar el porcentaje de batería');
+            }
+            
+            const energiaConsumida = document.getElementById('energiaConsumida');
+            if (energiaConsumida) {
+                energiaConsumida.textContent = data.energia_consumida.toFixed(2);
+                console.log('✅ Energía consumida actualizada en la interfaz');
+            } else {
+                console.error('❌ No se encontró el elemento para mostrar la energía consumida');
+            }
             
             // Si la carga ya no está activa, detener la consulta
+            // Agregar mensajes de depuración para verificar los valores de data.factura_id y data.activa
+            console.log('🔍 Verificando estado de carga:', data);
+            
             if (!data.activa) {
-                clearInterval(consultaInterval);
-                alert('La carga ha finalizado automáticamente.');
-                window.location.reload();
+                console.log('✅ La carga ha finalizado. Estado activa:', data.activa);
+                if (data.factura_id) {
+                    console.log('✅ Redirigiendo a la pantalla de pago. Factura ID:', data.factura_id);
+                    window.location.href = '/payments/pagar/' + data.factura_id + '/';
+                } else {
+                    console.warn('⚠️ No se encontró factura ID. Recargando la página.');
+                    window.location.reload();
+                }
             }
         })
         .catch(error => {

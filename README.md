@@ -323,10 +323,19 @@ python manage.py actualizar_baterias --intervalo 30
 
 ## 5. ARQUITECTURA DE SOFTWARE
 
-### 5.1 Patrón Modelo-Vista-Controlador (MVC)
-- **Modelos**: Definición de datos y lógica de negocio
-- **Vistas**: Presentación de datos y templates HTML
-- **Controladores**: Lógica de aplicación en views.py
+### 5.1 Patrón Modelo‑Template‑Vista (MTV)
+
+* **Modelos**: Definen la estructura de datos, las relaciones entre tablas y la lógica de negocio.
+* **Vistas (`views.py`)**: Reciben las peticiones HTTP, interactúan con los modelos y devuelven la respuesta adecuada (generalmente renderizando un template). En términos del patrón MVC, estas vistas cumplen el rol de *Controlador*.
+* **Templates**: Archivos HTML (u otros formatos) que definen la presentación de los datos para el usuario final.
+
+> **Nota:** Aunque el código de Django se organiza en `models`, `views` y `templates`, la documentación oficial se refiere al patrón como MTV, donde la capa de «Vista» se corresponde con el *Controller* de MVC y la capa de «Template» con la *View* de MVC.
+
+#### Recursos
+
+* **FAQ – “MVC” vs “MTV”** – [https://docs.djangoproject.com/en/5.2/faq/general/#django-appears-to-be-a-mvc-framework-but-you-call-the-controller-the-view-and-the-view-the-template-how-come-you-dont-use-the-standard-names](https://docs.djangoproject.com/en/5.2/faq/general/#django-appears-to-be-a-mvc-framework-but-you-call-the-controller-the-view-and-the-view-the-template-how-come-you-dont-use-the-standard-names)
+* **Glosario – término “MTV”** – [https://docs.djangoproject.com/en/5.2/glossary/#term-mtv](https://docs.djangoproject.com/en/5.2/glossary/#term-mtv)
+
 
 ### 5.2 Principios de Diseño Aplicados
 - **Separación de responsabilidades**: Cada app tiene una función específica
@@ -485,13 +494,17 @@ SECURE_HSTS_SECONDS = 31536000
 ### 10.1 Estructura Completa del Proyecto
 ```
 EV-Django-Project/
+├── crear_tarea_programada.ps1
+├── iniciar_app.ps1
+├── instalar_servicio.ps1
+├── EV-Django-Project.code-workspace
+├── README.md
+├── requirements.txt
+├── test_api.py
 ├── electrolineras_project/
 │   ├── manage.py
-│   ├── electrolineras_project/
-│   │   ├── __init__.py
-│   │   ├── settings.py
-│   │   ├── urls.py
-│   │   └── wsgi.py
+│   ├── db.sqlite3
+│   ├── debug_serializer.py
 │   ├── core/
 │   │   ├── models.py
 │   │   ├── views.py
@@ -502,14 +515,22 @@ EV-Django-Project/
 │   │   ├── views.py
 │   │   ├── urls.py
 │   │   └── templates/
+│   ├── pages/
+│   ├── messenger/
+│   ├── payments/
+│   │   ├── models.py
+│   │   ├── services.py
+│   │   ├── views.py
+│   │   └── templates/
 │   ├── profiles/
 │   ├── registration/
-│   ├── messenger/
-│   └── pages/
-├── requirements.txt
-├── iniciar_app.ps1
-├── instalar_servicio.ps1
-└── test_api.py
+│   ├── sent_emails/
+│   └── electrolineras_project/
+│       ├── __init__.py
+│       ├── settings.py
+│       ├── urls.py
+│       └── wsgi.py
+└── Recursos/
 ```
 
 ### 10.2 Configuraciones Clave
@@ -519,10 +540,15 @@ INSTALLED_APPS = [
     'registration',
     'django.contrib.admin',
     'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
     'electrolineras',
     'profiles',
     'core',
     'messenger',
+    'payments',
     'rest_framework',
     'pages.apps.PagesConfig',
     'tinymce',
@@ -536,14 +562,21 @@ TIME_ZONE = 'Europe/Madrid'
 ```python
 # URLs del sistema
 /                    # Página principal
-/mapa/              # Mapa de electrolineras
-/admin/             # Panel de administración
-/accounts/          # Autenticación
-/profiles/          # Perfiles de usuario
-/api/token/         # API de autenticación
-/electrolineras/    # Gestión de puntos
-/pages/             # Blog y noticias
-/messenger/         # Sistema de mensajería
+/mapa/               # Mapa de electrolineras
+/admin/              # Panel de administración
+/accounts/           # Autenticación
+/profiles/           # Perfiles de usuario
+/api/token/          # API de autenticación
+/electrolineras/     # Gestión de puntos de recarga
+/pages/              # Blog y noticias
+/messenger/          # Sistema de mensajería
+/payments/           # Sistema de pagos (API y UI)
+/payments/api/tarifa/               # Tarifa de energía actual
+/payments/api/mis-facturas/         # Listado de facturas del usuario
+/payments/api/crear-payment-intent/ # Crear PaymentIntent en Stripe
+/payments/api/confirmar-pago/       # Confirmar estado de pago
+/payments/api/estadisticas/         # Estadísticas de pagos y facturas
+/payments/pagar/<factura_id>/       # Página de pago de factura
 ```
 
 ---

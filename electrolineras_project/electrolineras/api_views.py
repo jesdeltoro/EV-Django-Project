@@ -15,7 +15,14 @@ import random
 class PuntoRecargaListAPIView(generics.ListAPIView):
     queryset = PuntoRecarga.objects.all()
     serializer_class = PuntoRecargaSerializer
-    permission_classes = [permissions.IsAuthenticated]  # Cambiado de AllowAny a IsAuthenticated
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Actualizar la batería y energía consumida de todas las sesiones activas
+        sesiones_activas = SesionCarga.objects.filter(activa=True)
+        for sesion in sesiones_activas:
+            sesion.actualizar_bateria()
+        return super().get_queryset()
 
 class ReservaListCreateAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -220,7 +227,12 @@ class DetenerCargaAPIView(APIView):
         
         # Devolver la información de la sesión finalizada
         serializer = SesionCargaSerializer(sesion)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        data = serializer.data
+        # Incluir factura generada para iniciar el pago
+        factura = getattr(sesion, 'factura', None)
+        if factura and factura.estado == 'pendiente':  # type: ignore
+            data['factura_id'] = factura.id
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class EstadoCargaAPIView(APIView):
