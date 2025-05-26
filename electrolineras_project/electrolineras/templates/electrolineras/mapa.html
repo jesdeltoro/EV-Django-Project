@@ -33,17 +33,7 @@
   .custom-popup .leaflet-popup-tip {
     background-color: white;
   }
-  
-  /* Animación para la barra de progreso */
-  @keyframes pulse {
-    0% { opacity: 0.5; }
-    50% { opacity: 1; }
-    100% { opacity: 0.5; }
-  }
-  
-  .charging-animation {
-    animation: pulse 2s infinite;
-  }
+    /* Eliminamos la animación para la barra de progreso */
 </style>
 
 <!-- JavaScript de Leaflet y MarkerCluster -->
@@ -107,12 +97,35 @@
       alert('Error: ' + error.message);
     });
   }  // Función para terminar la carga
-  function cancelarCarga(sesionId, popupElement) {
-    // Verificar que la sesión pertenece al usuario actual antes de intentar cancelarla
-    // Esta es una validación extra en el frontend, aunque la API también lo valida
+  function cancelarCarga(sesionId, popupElement, esAutomatico = false) {
+    console.log(`🛑 Intentando cancelar carga para sesión ${sesionId}. Automático: ${esAutomatico}`);
+    
+    // Variable para almacenar el ID de la factura si se obtiene antes de finalizar
+    let facturaId = null;
+    
+    // Parámetros para función detenerCargaDirectamente
+    const params = {
+      sesion_id: sesionId,
+      esAutomatico: esAutomatico
+    };
+    
+    // Si es automático (100% batería), intentar detener la carga directamente sin verificar
+    if (esAutomatico) {
+      console.log('Carga automática al 100%, intentando detener directamente sin verificación previa');
+      return detenerCargaDirectamente(params);
+    }
+    
+    // Si no es automático, obtener información de la sesión primero
     fetch('/electrolineras/api/estado-carga/' + sesionId + '/')
       .then(response => {
         if (!response.ok) {
+          // Si la sesión ya no existe, intentar ir a la última factura del usuario
+          if (response.status === 404) {
+            console.log('Sesión no encontrada, verificando última factura del usuario...');
+            // Redireccionar a la página de facturas sin mostrar error
+            window.location.href = '/payments/facturas/';
+            throw new Error('Sesión finalizada. Redirigiendo a facturas.');
+          }
           return response.json().then(data => {
             throw new Error(data.error || 'Error al verificar la sesión de carga');
           });
@@ -124,35 +137,49 @@
           throw new Error('No puedes terminar una carga iniciada por otro usuario');
         }
         
-        // Si la sesión pertenece al usuario, confirmar y proceder
-        if (confirm('¿Estás seguro de que quieres terminar esta carga?')) {
-          return fetch('/electrolineras/api/detener-carga/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify({ sesion_id: sesionId })
-          });
+        // Almacenar el ID de la factura si ya existe
+        if (data.factura_id) {
+          facturaId = data.factura_id;
+          console.log(`Factura ya generada con ID: ${facturaId}`);
+          
+          // Si la sesión ya está inactiva, redirigir directamente
+          if (!data.activa) {
+            console.log(`La sesión ${sesionId} ya está inactiva, redirigiendo a factura ${facturaId}`);
+            window.location.href = '/payments/pagar/' + facturaId + '/';
+            return Promise.reject(new Error('Redirección en curso'));
+          }
+        }
+        
+        // Si es automático, siempre proceder
+        if (esAutomatico) {
+          console.log('✅ Carga al 100% detectada, finalizando automáticamente');
+          // Usar la nueva función para detener directamente
+          params.facturaId = facturaId; // Pasar la factura_id si ya la tenemos
+          return detenerCargaDirectamente(params);
+        }
+        
+        // Si no es automático, pedir confirmación al usuario
+        const debeProceeder = confirm('¿Estás seguro de que quieres terminar esta carga?');
+        
+        if (debeProceeder) {
+          // Usar la nueva función para detener directamente
+          params.facturaId = facturaId; // Pasar la factura_id si ya la tenemos
+          return detenerCargaDirectamente(params);
         } else {
           throw new Error('Operación cancelada por el usuario');
         }
-      })
-      .then(response => {
-        if (!response.ok) {
-          return response.json().then(data => {
-            throw new Error(data.error || 'Error al finalizar la carga');
-          });
+      })      .catch(error => {
+        // No mostrar errores si ya estamos en proceso de redirección
+        if (error.message !== 'Redirección en curso') {
+          console.error('Error al verificar carga:', error);
+          // Si es automático, redireccionar a facturas sin mostrar mensaje
+          if (esAutomatico) {
+            console.log('Carga automática: redirigiendo a facturas sin mostrar error');
+            window.location.href = '/payments/facturas/';
+          } else {
+            alert('Error: ' + error.message);
+          }
         }
-        return response.json();
-      })
-      .then(data => {
-        alert('Carga finalizada con éxito');
-        // En lugar de intentar cerrar el popup, simplemente recargamos la página
-        location.reload();
-      })
-      .catch(error => {
-        alert('Error: ' + error.message);
       });
   }
   // Función para iniciar la carga
@@ -266,19 +293,14 @@
           
           // Mostrar estado con estilo
           popupContent += `<div style="margin-top: 5px;">Estado: <span style="${estadoStyle}">${point.estado.replace('_', ' ').toUpperCase()}</span></div>`;
-          
-          // Mostrar información de sesión si el punto está en uso
-          if (point.estado === 'en_uso' && point.sesion_actual) {            // Crear barra de progreso para la batería con IDs únicos para actualización dinámica
+            // Mostrar información de sesión si el punto está en uso
+          if (point.estado === 'en_uso' && point.sesion_actual) {
             const porcentaje = point.sesion_actual.porcentaje_bateria;
-            const barraColor = porcentaje < 30 ? "#dc3545" : porcentaje < 75 ? "#ffc107" : "#28a745";
             const sessionId = point.sesion_actual.id;
             
             popupContent += `
               <div style="margin-top: 8px; border: 1px solid #ddd; padding: 8px; border-radius: 5px; background-color: #f8f9fa;">
                 <div style="margin-bottom: 5px;"><strong>Batería actual: <span id="bateria-${sessionId}">${porcentaje}%</span></strong></div>
-                <div style="background-color: #e9ecef; border-radius: 10px; height: 15px; overflow: hidden;">
-                  <div class="charging-animation" style="width: ${porcentaje}%; background-color: ${barraColor}; height: 100%; border-radius: 10px;"></div>
-                </div>
                 <div style="margin-top: 5px;">Energía consumida: <span id="energia-${sessionId}">${point.sesion_actual.energia_consumida.toFixed(2)} kWh</span></div>
                 <div>Tiempo activa: <span id="tiempo-${sessionId}">${point.sesion_actual.tiempo_activa} minutos</span></div>
               </div>
@@ -365,10 +387,10 @@
           });
 
           // Guardar el marcador por ID para acceso rápido
-          window.puntoMarkers[point.id] = marker;
-
-          // Guardar el último popup abierto en localStorage
+          window.puntoMarkers[point.id] = marker;          // Guardar el último popup abierto en localStorage
           marker.on('popupopen', function(e) {
+            console.log(`🔔 Popup abierto para punto: ${point.nombre}, Estado: ${point.estado}`);
+            
             // Añadir borde de color según el estado
             const container = e.popup._container;
             if (container) {
@@ -377,17 +399,26 @@
             
             // Iniciar cuenta atrás de reserva si es necesario
             if (point.reservado && point.fecha_expiracion && point.estado !== 'en_uso') {
+              console.log(`⏱️ Iniciando cuenta atrás para reserva del punto: ${point.id}`);
               startCountdown(`countdown-${point.id}`, point.fecha_expiracion);
             }
             
             // Iniciar actualización de datos en tiempo real para puntos en uso
             if (point.estado === 'en_uso' && point.sesion_actual) {
-              // Guardar el ID del intervalo para limpiarlo cuando se cierre el popup
-              const intervalo = actualizarDatosEnTiempoReal(point, point.sesion_actual.id);
+              console.log(`🔌 Punto en uso detectado: ${point.nombre}, ID sesión: ${point.sesion_actual.id}`);
               
-              // Limpiar el intervalo al cerrar el popup
+              // Guardar el ID del intervalo para limpiarlo cuando se cierre el popup
+              const intervaloDatos = actualizarDatosEnTiempoReal(point, point.sesion_actual.id);
+              
+              // NUEVO: Iniciar monitoreo específico para detectar 100% y finalización
+              console.log(`🔋 Iniciando monitoreo de batería para sesión: ${point.sesion_actual.id}`);
+              const intervaloEstado = actualizarEstadoCarga(point.sesion_actual.id);
+              
+              // Limpiar los intervalos al cerrar el popup
               marker.on('popupclose', function() {
-                clearInterval(intervalo);
+                console.log(`🛑 Cerrando popup para punto: ${point.nombre}, limpiando intervalos`);
+                if (intervaloDatos) clearInterval(intervaloDatos);
+                if (intervaloEstado) clearInterval(intervaloEstado);
               });
             }
 
@@ -480,23 +511,10 @@
             console.log(`Elementos para sesión ${sessionId} no encontrados, deteniendo actualización`);
             limpiarIntervalo(sessionId);
             return;
-          }
-
-          // Actualizar porcentaje de batería
+          }          // Actualizar solo el texto del porcentaje de batería
           if (bateriaElement) {
             bateriaElement.textContent = `${data.porcentaje_bateria_actual}%`;
-
-            // Actualizar barra de progreso
-            // Buscar el siguiente div con clase 'charging-animation' dentro del mismo contenedor
-            let barraElement = bateriaElement.parentElement?.parentElement?.querySelector('.charging-animation');
-            if (barraElement) {
-              const porcentaje = data.porcentaje_bateria_actual;
-              const barraColor = porcentaje < 30 ? "#dc3545" : porcentaje < 75 ? "#ffc107" : "#28a745";
-              barraElement.style.width = `${porcentaje}%`;
-              barraElement.style.backgroundColor = barraColor;
-            } else {
-              console.log('No se encontró la barra de progreso para actualizar.');
-            }
+            console.log(`Batería actualizada para sesión ${sessionId}: ${data.porcentaje_bateria_actual}%`);
           }
 
           // Actualizar energía consumida
@@ -527,6 +545,183 @@
     
     // Retornar el ID del intervalo
     return intervaloActualizacion;
+  }
+  // Asegurar que se monitoree el estado de carga y se detecte cuando llega al 100%
+  function actualizarEstadoCarga(sessionId) {
+    console.log(`🚀 Iniciando monitoreo de carga para sesión ${sessionId}`);
+    
+    // Almacenar el intervalo en una variable para poder limpiarlo después
+    const intervalo = setInterval(() => {
+        console.log(`⏱️ Verificando estado de carga para sesión ${sessionId} en ${new Date().toLocaleTimeString()}`);
+        
+        fetch(`/electrolineras/api/estado-carga/${sessionId}/`)
+            .then(response => {
+                if (!response.ok) {
+                    // Si la sesión ya no existe (404), intentar navegar a la página de facturas
+                    if (response.status === 404) {
+                        console.log(`❌ Sesión ${sessionId} no encontrada, posiblemente ya finalizada`);
+                        clearInterval(intervalo);
+                        window.location.href = '/payments/facturas/';
+                        throw new Error('Sesión no encontrada, redirigiendo a facturas');
+                    }
+                    throw new Error('Error al obtener el estado de la carga');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(`🔄 Datos recibidos para sesión ${sessionId}:`, data);
+                console.log(`🔋 Porcentaje actual: ${data.porcentaje_bateria_actual}%`);
+
+                // Actualizar solo el texto del porcentaje
+                const bateriaElement = document.getElementById(`bateria-${sessionId}`);
+                if (bateriaElement) {
+                    bateriaElement.textContent = `${data.porcentaje_bateria_actual}%`;
+                    console.log(`✅ Texto de batería actualizado: ${data.porcentaje_bateria_actual}%`);
+                } else {
+                    console.warn(`⚠️ No se encontró el elemento bateria-${sessionId} para actualizar`);
+                }                // Si la carga llega al 99% o más, terminar automáticamente
+                if (data.porcentaje_bateria_actual >= 99) {
+                    console.log(`✅ Carga al ${data.porcentaje_bateria_actual}%. Terminando automáticamente la carga para sesión ${sessionId}`);
+                    clearInterval(intervalo);
+                    
+                    // Si ya tenemos factura_id, ir directamente a la página de pago
+                    if (data.factura_id) {
+                        console.log(`✅ Ya existe factura ID ${data.factura_id}, redirigiendo directamente`);
+                        window.location.href = `/payments/pagar/${data.factura_id}/`;
+                        return;
+                    }
+                    
+                    // Usar la nueva función para detener directamente sin posibles errores
+                    detenerCargaDirectamente({
+                        sesion_id: sessionId,
+                        esAutomatico: true,
+                        facturaId: data.factura_id || null
+                    });
+                    return;
+                }
+
+                // Redirigir si la carga finaliza
+                if (!data.activa) {
+                    console.log(`🛑 Sesión ${sessionId} ya no está activa.`);
+                    clearInterval(intervalo);
+                    if (data.factura_id) {
+                        console.log(`✅ Redirigiendo a pagar factura con ID: ${data.factura_id}`);
+                        window.location.href = `/payments/pagar/${data.factura_id}/`;
+                    } else {
+                        console.warn('⚠️ Carga finalizada pero no se generó factura. Recargando página.');
+                        location.reload();
+                    }
+                }
+            })
+            .catch(error => {
+                // Solo mostrar errores si no estamos en un proceso de redirección
+                if (!error.message.includes('redirigiendo')) {
+                    console.error(`❌ Error al actualizar estado de la carga para sesión ${sessionId}:`, error);
+                }
+                clearInterval(intervalo);
+            });
+    }, 5000);
+    
+    return intervalo;
+}
+
+// Iniciar actualización dinámica para puntos en uso
+function iniciarActualizacionDinamica() {
+    console.log('📊 Buscando sesiones de carga activas para actualización dinámica...');
+    
+    // Obtener todos los elementos de batería usando el selector correcto
+    const elementosBateria = document.querySelectorAll('[id^="bateria-"]');
+    console.log(`🔍 Encontrados ${elementosBateria.length} elementos de batería para monitorear`);
+    
+    // Si no hay elementos, mostrar un mensaje
+    if (elementosBateria.length === 0) {
+        console.log('ℹ️ No se encontraron sesiones de carga activas para monitorear');
+        return;
+    }
+    
+    // Para cada elemento, iniciar el monitoreo
+    elementosBateria.forEach(element => {
+        const sessionId = element.id.split('-')[1];
+        console.log(`✅ Iniciando monitoreo para sesión ID: ${sessionId}`);
+        actualizarEstadoCarga(sessionId);
+    });
+}
+
+// Función para comprobar si hay sesiones de carga activas cada 10 segundos
+function verificarSesionesActivas() {
+    console.log('🔄 Verificando si hay nuevas sesiones de carga activas...');
+    iniciarActualizacionDinamica();
+    
+    // Programar la siguiente verificación
+    setTimeout(verificarSesionesActivas, 10000);
+}
+
+// Iniciar la carga de puntos y la actualización dinámica
+loadChargingPoints();
+
+// Programar la primera verificación después de que se carguen los puntos
+setTimeout(() => {
+    console.log('🚀 Iniciando sistema de monitoreo de cargas...');
+    iniciarActualizacionDinamica();
+    verificarSesionesActivas();
+}, 2000);
+
+  // Función para detener la carga directamente sin verificación previa
+  function detenerCargaDirectamente(params) {
+    const { sesion_id, esAutomatico } = params;
+    console.log(`🚨 Deteniendo carga directamente para sesión ${sesion_id}. Automático: ${esAutomatico}`);
+    
+    // Limpiar cualquier intervalo pendiente antes de proceder
+    limpiarIntervalo(sesion_id);
+    
+    // Llamar directamente a la API de detener carga
+    fetch('/electrolineras/api/detener-carga/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({ sesion_id: sesion_id })
+    })
+    .then(response => {
+      if (!response.ok) {
+        // Si la respuesta no es exitosa, pero es una carga automática, no mostrar error al usuario
+        if (esAutomatico) {
+          console.error('Error al detener carga automáticamente, redirigiendo a facturas');
+          window.location.href = '/payments/facturas/';
+          return null; // Prevenir ejecución adicional
+        }
+        return response.json().then(data => {
+          throw new Error(data.error || 'Error al finalizar la carga');
+        });
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Si no hay respuesta (debido a redirección previa) o no hay datos, salir
+      if (!data) return;
+      
+      console.log('Respuesta de finalización de carga:', data);
+      
+      if (data.factura_id) {
+        console.log(`✅ Redirigiendo a factura con ID: ${data.factura_id}`);
+        // Redirigir directamente sin alert para evitar bloqueos
+        window.location.href = '/payments/pagar/' + data.factura_id + '/';
+      } else {
+        console.warn('⚠️ No se encontró ID de factura, redirigiendo a listado de facturas');
+        window.location.href = '/payments/facturas/';
+      }
+    })
+    .catch(error => {
+      // Si es automático, no mostrar errores al usuario
+      if (esAutomatico) {
+        console.error('Error silenciado (carga automática):', error.message);
+        window.location.href = '/payments/facturas/';
+      } else {
+        console.error('Error al finalizar carga:', error);
+        alert('Error: ' + error.message);
+      }
+    });
   }
 </script>
 {% endblock %}

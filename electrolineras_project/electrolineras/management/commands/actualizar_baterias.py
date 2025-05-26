@@ -39,9 +39,18 @@ class Command(BaseCommand):
             
             # Mostrar información sobre la actualización
             if sesion.porcentaje_bateria_actual > bateria_anterior:
+                # Calcular costo estimado usando la tarifa actual
+                try:
+                    from payments.models import TarifaEnergia
+                    tarifa = TarifaEnergia.get_tarifa_actual()
+                    costo_estimado = float(sesion.energia_consumida) * float(tarifa.precio_por_kwh)
+                except:
+                    costo_estimado = 0
+                
                 self.stdout.write(
                     f'Punto {sesion.punto_recarga.nombre}: Batería {bateria_anterior}% → {sesion.porcentaje_bateria_actual}% | '
                     f'Energía: {sesion.energia_consumida:.2f} kWh | '
+                    f'Costo estimado: {costo_estimado:.2f}€ | '
                     f'Usuario: {sesion.usuario.username}'
                 )
                 
@@ -50,6 +59,6 @@ class Command(BaseCommand):
                     self.stdout.write(
                         self.style.SUCCESS(
                             f'🔋 Batería al 100% en {sesion.punto_recarga.nombre}. '
-                            f'Se recomienda detener la carga.'
+                            f'Se recomienda detener la carga. Costo final: {costo_estimado:.2f}€'
                         )
                     )

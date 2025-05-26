@@ -1,50 +1,42 @@
 import requests
 import json
 
-url = "http://127.0.0.1:8000/electrolineras/api/iniciar-carga/"
+# URL de la API para crear PaymentIntent
+url_crear_payment_intent = "http://127.0.0.1:8000/payments/api/crear-payment-intent/"
 
-data = {
-    "reserva_id": 14  # Reemplaza con el ID real de la reserva
+# Token de autenticación
+token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ4Mjg4NDM5LCJpYXQiOjE3NDgyODQ4MzksImp0aSI6IjIyZmJhYjg3NDEzYTQ1ZGJhYjBlNWRiM2VmNDk3NWIwIiwidXNlcl9pZCI6MTJ9.DGiiDmEjxmrng0Gs8g6cUWyC0Zcx7Hlh531FJgW0VgM"
+
+# Define el payload
+payload_crear_payment_intent = {
+    "factura_id": 49  # Reemplaza con el factura_id real que deseas probar
 }
 
-# Primero, obtener una sesión y login
-session = requests.Session()
-
-# Reemplaza con tus credenciales de login
-login_data = {
-    "username": "tuusuario",  # Reemplaza con tu nombre de usuario
-    "password": "tupassword"  # Reemplaza con tu contraseña
-}
-
-# Obtener el token CSRF primero
-response = session.get("http://127.0.0.1:8000/accounts/login/")
-csrftoken = session.cookies.get("csrftoken")
-
-headers = {
+# Define los headers
+headers_crear_payment_intent = {
     "Content-Type": "application/json",
-    "X-CSRFToken": csrftoken
+    "Authorization": f"Bearer {token}"
 }
 
-# Realizar el login primero
-login_url = "http://127.0.0.1:8000/accounts/login/"
-login_data = {
-    "username": "tuusuario",  # Reemplaza con tu nombre de usuario
-    "password": "tupassword"  # Reemplaza con tu contraseña
-}
+# Debug: Verificar headers y payload
+print("Headers para crear PaymentIntent:", headers_crear_payment_intent)
+print("Payload para crear PaymentIntent:", payload_crear_payment_intent)
 
-# Obtener csrf token para el login
-login_page = session.get(login_url)
-# Buscar el token csrf en la página
-import re
-csrf_token = re.search('name="csrfmiddlewaretoken" value="(.+?)"', login_page.text)
-if csrf_token:
-    login_data['csrfmiddlewaretoken'] = csrf_token.group(1)
+# Realizar la petición POST
+try:
+    response_crear_payment_intent = requests.post(
+        url_crear_payment_intent,
+        json=payload_crear_payment_intent,
+        headers=headers_crear_payment_intent
+    )
 
-# Realizar login
-session.post(login_url, data=login_data, headers={"Referer": login_url})
+    # Imprimir la respuesta
+    if response_crear_payment_intent.status_code == 200:
+        print("✅ Request successful!")
+        print("Response:", json.dumps(response_crear_payment_intent.json(), indent=4))
+    else:
+        print(f"❌ Request failed with status code {response_crear_payment_intent.status_code}")
+        print("Response:", response_crear_payment_intent.text)
 
-# Una vez autenticado, realizar la petición a la API
-response = session.post(url, data=json.dumps(data), headers=headers)
-
-print(f"Status code: {response.status_code}")
-print(f"Response: {response.text}")
+except requests.exceptions.RequestException as e:
+    print(f"❌ Error en la solicitud: {e}")
