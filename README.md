@@ -173,6 +173,111 @@ class Profile(models.Model):
 
 ---
 
+#### 💳 Aplicación Payments (Sistema de Pagos)
+
+**Propósito:**  
+La aplicación `payments` gestiona la facturación y los pagos de sesiones de carga para usuarios registrados, integrando procesamiento real con Stripe para simular un entorno profesional y seguro de transacciones. Permite que cada usuario visualice sus facturas, consulte tarifas, realice pagos y acceda a estadísticas de consumo y gasto.
+
+**Funcionalidades principales:**
+- **Generación automática de facturas** al finalizar cada sesión de carga.
+- **Gestión de tarifas** dinámicas consultables vía API.
+- **Integración con Stripe** para pagos seguros (PaymentIntent y confirmación de pago).
+- **Historial de facturas** personalizadas para cada usuario.
+- **Panel de administración** para revisión de pagos y control financiero.
+- **API RESTful** para consultas, pagos y estadísticas.
+- **Notificaciones automáticas** tras pago exitoso (opcional: email, logs).
+- **Estadísticas detalladas** de pagos y consumo energético.
+
+**Modelos principales:**
+```python
+class Tarifa(models.Model):
+    nombre = models.CharField(max_length=50)
+    precio_kwh = models.DecimalField(max_digits=5, decimal_places=2)
+    activa = models.BooleanField(default=True)
+
+class Factura(models.Model):
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    sesion_carga = models.OneToOneField('SesionCarga', on_delete=models.CASCADE)
+    fecha_emision = models.DateTimeField(auto_now_add=True)
+    energia_consumida = models.FloatField()
+    total = models.DecimalField(max_digits=7, decimal_places=2)
+    pagada = models.BooleanField(default=False)
+    stripe_payment_intent = models.CharField(max_length=255, null=True, blank=True)
+```
+> **Nota:** El modelo `Tarifa` permite modificar el precio por kWh dinámicamente, y la relación uno a uno entre `Factura` y `SesionCarga` garantiza la trazabilidad de cada pago.
+
+**Servicios y lógica de negocio (services.py):**
+- **Cálculo automático del importe** al emitir una factura:  
+  ```python
+  total = energia_consumida * tarifa_activa.precio_kwh
+  ```
+- **Creación y gestión de PaymentIntent** con Stripe para cada factura pendiente.
+- **Verificación y actualización del estado de pago** tras confirmación de Stripe.
+- **Sincronización automática** de facturas y pagos mediante señales de Django.
+
+**Endpoints y URLs principales:**
+- `/payments/api/tarifa/` – Consulta la tarifa de energía actual.
+- `/payments/api/mis-facturas/` – Devuelve el listado de facturas del usuario autenticado.
+- `/payments/api/crear-payment-intent/` – Crea un PaymentIntent de Stripe para una factura pendiente.
+- `/payments/api/confirmar-pago/` – Confirma el pago de una factura tras la devolución de Stripe.
+- `/payments/api/estadisticas/` – Proporciona estadísticas de consumo y pagos realizados.
+- `/payments/pagar/<factura_id>/` – Página web para el pago de una factura concreta.
+
+**Flujo típico de pago:**
+1. El usuario finaliza una sesión de carga.
+2. Se genera automáticamente la factura con la energía consumida y el importe.
+3. El usuario accede a su historial de facturas y selecciona “Pagar”.
+4. Se crea un PaymentIntent en Stripe y se muestra el formulario de pago seguro.
+5. Stripe procesa el pago y devuelve la confirmación.
+6. El backend valida el pago y actualiza el estado de la factura a “pagada”.
+
+**Integración con Stripe:**
+- Uso de **PaymentIntent** para pagos seguros, compatible con tarjetas y métodos alternativos.
+- **Webhook opcional** para gestionar pagos asíncronos y verificar el estado real en Stripe.
+- Almacenamiento del `stripe_payment_intent` en la factura para trazabilidad y auditoría.
+- Protección contra pagos duplicados y validación estricta de los datos recibidos.
+
+**Seguridad y validaciones:**
+- Acceso a facturas y endpoints restringido a usuarios autenticados.
+- Comprobación de propiedad: solo el usuario dueño puede consultar o pagar sus facturas.
+- Validación del importe y la sesión de carga antes de crear el intent de pago.
+- Uso de HTTPS y CSRF para formularios y endpoints sensibles.
+- Manejo seguro de claves API de Stripe mediante variables de entorno y configuración en `settings.py`.
+
+**Ejemplo de uso (pseudocódigo):**
+```python
+# Crear factura al terminar sesión
+factura = Factura.objects.create(
+    usuario=request.user,
+    sesion_carga=sesion,
+    energia_consumida=sesion.energia_consumida,
+    total=sesion.energia_consumida * tarifa.precio_kwh
+)
+
+# Crear PaymentIntent (en services.py)
+payment_intent = stripe.PaymentIntent.create(
+    amount=int(factura.total * 100),  # en céntimos
+    currency='eur',
+    metadata={'factura_id': factura.id}
+)
+factura.stripe_payment_intent = payment_intent['id']
+factura.save()
+```
+
+**Consideraciones de diseño:**
+- El sistema está preparado para soportar múltiples métodos de pago en el futuro.
+- La arquitectura desacopla la lógica de facturación y el procesamiento externo de pagos.
+- El usuario nunca expone datos sensibles; todo el flujo de pago ocurre en Stripe.
+- Las estadísticas permiten al usuario y al administrador monitorizar el gasto y consumo eléctrico.
+
+**Mejoras futuras posibles:**
+- Soporte para **pagos recurrentes** o domiciliaciones.
+- Integración de **facturación electrónica** (PDF automático, envío por email).
+- Soporte para **descuentos/promociones** y cupones.
+- Exportación de informes para contabilidad.
+
+---
+
 ## 3. DISEÑO DE LA BASE DE DATOS
 
 ### 3.1 Modelos Principales
