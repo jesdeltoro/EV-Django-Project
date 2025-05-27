@@ -48,17 +48,32 @@ Con el crecimiento del parque de vehículos eléctricos, existe una necesidad re
 ### 2.2 Arquitectura del Sistema
 
 ```
-electrolineras_project/
-├── electrolineras_project/    # Configuración principal
-│   ├── settings.py           # Configuración Django
-│   ├── urls.py              # URLs principales
-│   └── wsgi.py              # Servidor WSGI
-├── core/                    # Aplicación principal
-├── electrolineras/          # Gestión de puntos de carga
-├── profiles/               # Perfiles de usuario
-├── registration/           # Sistema de registro
-├── messenger/              # Sistema de mensajería
-└── pages/                  # Páginas estáticas y blog
+EV-Django-Project/
+├── crear_tarea_programada.ps1         # Script PowerShell para programar tareas automáticas
+├── iniciar_app.ps1                    # Script PowerShell para iniciar la app automáticamente
+├── instalar_servicio.ps1              # Script PowerShell para instalar como servicio en Windows
+├── EV-Django-Project.code-workspace   # Configuración de espacio de trabajo para VS Code
+├── README.md                          # Documentación principal del proyecto
+├── requirements.txt                   # Dependencias del proyecto
+├── test_api.py                        # Pruebas automatizadas de la API
+├── electrolineras_project/
+│   ├── manage.py                      # Comando principal de Django
+│   ├── db.sqlite3                     # Base de datos SQLite (desarrollo)
+│   ├── debug_serializer.py            # Utilidad de debug/serialización
+│   ├── core/
+│   ├── electrolineras/
+│   ├── pages/
+│   ├── messenger/
+│   ├── payments/
+│   ├── profiles/
+│   ├── registration/
+│   ├── sent_emails/
+│   └── electrolineras_project/
+│       ├── __init__.py
+│       ├── settings.py
+│       ├── urls.py
+│       └── wsgi.py
+└── Recursos/                          # Carpeta para recursos adicionales (imágenes, docs, etc.)
 ```
 
 ### 2.3 Aplicaciones del Sistema
