@@ -440,6 +440,15 @@ python manage.py actualizar_baterias --intervalo 30
 - Detecta automáticamente cuando las baterías alcanzan el 100%
 - Permite configurar la frecuencia de actualización según necesidades
 
+### 4.11 Payments
+
+- **Procesamiento de pagos** para sesiones de carga
+- **Integración con pasarelas de pago** (por ejemplo, Stripe.)
+- **Generación de facturas** y recibos automáticos
+- **Historial de transacciones** accesible para el usuario
+- **Validación y seguridad** en el manejo de datos financieros
+- **Notificaciones automáticas** de pago exitoso o fallido
+
 ---
 
 ## 5. ARQUITECTURA DE SOFTWARE
