@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import PageListView, PageDetailView, PageCreate, PageUpdate, PageDelete
 
-app_name = 'pages'  # This sets the namespace to 'pages'
+app_name = 'pages_app'  # Cambiado para evitar conflicto de namespace
 
 urlpatterns = [
     # First list fixed URL patterns (most specific)
