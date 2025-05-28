@@ -15,7 +15,7 @@
                         {% csrf_token %}
                         <div class="d-flex justify-content-end" style="gap: 0.5rem;">
                             <input type="submit" class="btn btn-danger" value="Eliminar página" />
-                            <a href="{% url 'pages:page' page.id page.title|slugify %}" class="btn btn-success">Cancelar</a>
+                            <a href="{% url 'pages_app:page' page.id page.title|slugify %}" class="btn btn-success">Cancelar</a>
                         </div>
                     </form>
                 </div>
