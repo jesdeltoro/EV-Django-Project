@@ -23,7 +23,7 @@ from messenger.urls import messenger_patterns
 urlpatterns = [
     path('', include('core.urls')),
     path('admin/', admin.site.urls),
-    path('pages/', include('pages.urls')),
+    path('pages/', include(('pages.urls', 'pages_app'), namespace='pages_app')),
     path('electrolineras/', include('electrolineras.urls')),
     path('payments/', include('payments.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
