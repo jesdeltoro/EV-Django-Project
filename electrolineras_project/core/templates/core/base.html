@@ -33,7 +33,7 @@
                 <a class="nav-link" href="{% url 'home' %}">Inicio</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="{% url 'pages:pages' %}">Blog</a>
+                <a class="nav-link" href="{% url 'pages_app:pages' %}">Blog</a>
               </li>
               {% if request.user.is_authenticated %}              <li class="nav-item">
                 <a class="nav-link" href="{% url 'mapa_puntos_recarga' %}">Mapa</a>
@@ -85,7 +85,7 @@
             </div>            <div class="col-md-4 mb-3">
               <h5>Enlaces Útiles</h5>
               <ul class="list-unstyled">                <li><a href="{% url 'home' %}" class="text-white">Inicio</a></li>
-                <li><a href="{% url 'pages:pages' %}" class="text-white">Blog</a></li>
+                <li><a href="{% url 'pages_app:pages' %}" class="text-white">Blog</a></li>
                 {% if request.user.is_authenticated %}
                 <li><a href="{% url 'mapa_puntos_recarga' %}" class="text-white">Mapa</a></li>
                 <li><a href="{% url 'payments:facturas' %}" class="text-white">Mis Facturas</a></li>
