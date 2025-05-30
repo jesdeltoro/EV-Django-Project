@@ -26,7 +26,13 @@ SECRET_KEY = 'django-insecure-%nyt9ci_gm3$*o^qe+53i*56vf2c8s!ypnq7$f+g$=^ejx@%lr
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.0.2.2']
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '10.0.2.2',
+    'evemaps.juliomalaga.me'
+]
+
 
 
 # Application definition
@@ -207,3 +213,8 @@ PAYMENT_PER_KWH = 0.30  # Precio por kWh en euros (fácilmente ajustable)
 PAYMENT_CURRENCY = 'eur'  # Moneda para los pagos
 PAYMENT_SUCCESS_URL = 'http://localhost:8000/payments/success/'  # URL de éxito
 PAYMENT_CANCEL_URL = 'http://localhost:8000/payments/cancel/'    # URL de cancelación
+
+# Configuración para manejar cookies seguras y encabezados de proxy
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

@@ -4,24 +4,6 @@
 {% block title %}Pagar Factura  {{ factura_id }}{% endblock %}
 
 {% block content %}
-{% if debug %}
-  <div class="alert alert-info">
-    <strong>DEBUG:</strong><br>
-    stripe_publishable_key: {{ stripe_publishable_key }}<br>
-    factura_id: {{ factura_id }}<br>
-    factura_numero: {{ factura_numero }}<br>
-    factura_total: {{ factura_total }}<br>
-    factura_energia: {{ factura_energia }}<br>
-    mostrar_formulario: {{ mostrar_formulario }}<br>
-    user: {{ request.user }}<br>
-    <!-- Datos necesarios para Stripe -->
-    <hr>
-    <strong>Datos necesarios para la barra de tarjeta:</strong><br>
-    Clave pública Stripe (stripe_publishable_key): <code>{{ stripe_publishable_key }}</code><br>
-    <!-- El div donde Stripe montará el elemento de tarjeta: -->
-    ID del div: <code>card-element</code>
-  </div>
-{% endif %}
 <div class="container" style="max-width: 500px; margin: 40px auto;">
   {% if not stripe_publishable_key %}
     <div class="alert alert-danger mb-4">
