@@ -9,6 +9,7 @@ class PuntoRecargaSerializer(serializers.ModelSerializer):
     tipo_conector_nombre = serializers.SerializerMethodField()
     sesion_actual = serializers.SerializerMethodField()
     reserva_id = serializers.SerializerMethodField()
+    tiempo_restante = serializers.SerializerMethodField()
 
     class Meta:
         model = PuntoRecarga
@@ -16,7 +17,7 @@ class PuntoRecargaSerializer(serializers.ModelSerializer):
                   "potencia_kw", "tipo_conector", "tipo_conector_nombre",
                   "reservado", "reservado_por", "fecha_expiracion", "reserva_id",
                   "estado", "energia_suministrada_total", "energia_actual_sesion",
-                  "sesion_actual")
+                  "sesion_actual", "tiempo_restante")
     
     def get_tipo_conector_nombre(self, obj):
         if obj.tipo_conector:
@@ -61,10 +62,22 @@ class PuntoRecargaSerializer(serializers.ModelSerializer):
             return str(reserva.pk)  # Usar pk en lugar de id y convertir a string para evitar errores
         return None
 
+    def get_tiempo_restante(self, obj):
+        from django.utils import timezone
+        reserva = Reserva.objects.filter(punto=obj, fecha_expiracion__gt=timezone.now()).first()
+        if reserva:
+            tiempo_restante = (reserva.fecha_expiracion - timezone.now()).total_seconds()
+            minutos_restantes = int(tiempo_restante // 60)
+            segundos_restantes = int(tiempo_restante % 60)
+            return f"{minutos_restantes}:{segundos_restantes:02d}"
+        return None
+
 class ReservaSerializer(serializers.ModelSerializer):
+    punto_nombre = serializers.CharField(source="punto.nombre", read_only=True)
+
     class Meta:
         model = Reserva
-        fields = "__all__"
+        fields = ("id", "usuario", "punto", "punto_nombre", "fecha_inicio", "fecha_expiracion")
         read_only_fields = ("usuario", "fecha_inicio", "fecha_expiracion")
 
 

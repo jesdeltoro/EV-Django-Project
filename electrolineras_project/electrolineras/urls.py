@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import mapa_puntos_recarga, PuntoRecargaDetailView, iniciar_carga_view
 from . import api_views
+from .api_views import CancelarReservaAPIView
 
 urlpatterns = [
     path('mapa/', mapa_puntos_recarga, name='mapa_puntos_recarga'),
@@ -10,6 +11,7 @@ urlpatterns = [
     # API endpoints
     path('api/puntos/', api_views.PuntoRecargaListAPIView.as_view(), name='api_puntos'),
     path('api/reservas/', api_views.ReservaListCreateAPIView.as_view(), name='api_reservas'),
+    path('api/reservas/<int:reserva_id>/', api_views.ReservaDetailAPIView.as_view(), name='api_reserva_detalle'),
     
     # Nuevos endpoints para la simulación de carga
     path('api/iniciar-carga/', api_views.IniciarCargaAPIView.as_view(), name='api_iniciar_carga'),
@@ -19,6 +21,7 @@ urlpatterns = [
     path('api/sesiones-activas/', api_views.SesionesActivasAPIView.as_view(), name='api_sesiones_activas'),
     path('api/historial-sesiones/', api_views.HistorialSesionesAPIView.as_view(), name='api_historial_sesiones'),
     path('api/cancelar-reserva/', api_views.CancelarReservaAPIView.as_view(), name='api_cancelar_reserva'),
+    path('api/cancelar-reserva/<int:reserva_id>/', CancelarReservaAPIView.as_view(), name='cancelar_reserva'),
     path('api/puntos-en-uso/', api_views.PuntosEnUsoAPIView.as_view(), name='api_puntos_en_uso'),
     path('api/actualizar-bateria/', api_views.ActualizarBateriaAPIView.as_view(), name='api_actualizar_bateria'),
 ]

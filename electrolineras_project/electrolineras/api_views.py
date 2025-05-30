@@ -323,9 +323,11 @@ class CancelarReservaAPIView(APIView):
     """
     permission_classes = [permissions.IsAuthenticated]
     
-    def post(self, request):
-        # Obtener el ID de la reserva
-        reserva_id = request.data.get('reserva_id')
+    def post(self, request, reserva_id=None):
+        # Obtener el ID de la reserva desde la URL o el cuerpo de la solicitud
+        if not reserva_id:
+            reserva_id = request.data.get('reserva_id')
+        
         if not reserva_id:
             return Response({'error': 'El ID de reserva es obligatorio'}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -360,6 +362,8 @@ class CancelarReservaAPIView(APIView):
                 {'error': 'Reserva no encontrada o ya expirada'}, 
                 status=status.HTTP_404_NOT_FOUND
             )
+        # Registrar el ID de la reserva y el usuario para depuración
+        print(f"Intentando cancelar reserva: {reserva_id}, Usuario: {request.user}")
 
 
 class PuntosEnUsoAPIView(APIView):
@@ -448,3 +452,18 @@ class ActualizarBateriaAPIView(APIView):
             'energia_consumida': energia_consumida,
             'mensaje': mensaje
         }, status=status.HTTP_200_OK)
+
+
+class ReservaDetailAPIView(APIView):
+    """
+    Vista de API para obtener información de una reserva específica.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, reserva_id):
+        try:
+            reserva = Reserva.objects.get(id=reserva_id, usuario=request.user)
+            serializer = ReservaSerializer(reserva)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Reserva.DoesNotExist:
+            return Response({'error': 'Reserva no encontrada o no tienes permiso para acceder a ella.'}, status=status.HTTP_404_NOT_FOUND)
