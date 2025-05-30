@@ -308,11 +308,15 @@
           }
             // Mostrar información de reserva solo si está reservado pero no en uso
           if (point.reservado && point.estado !== 'en_uso') {
-            popupContent += `<div style="margin-top:8px;"><strong>Reservado por: ${point.reservado_por || 'Desconocido'}</strong></div>`;
-            if (point.fecha_expiracion) {
-              const countdownId = `countdown-${point.id}`;
-              popupContent += `<div><strong>Tiempo restante: <span id="${countdownId}"></span></strong></div>`;
-            }
+            const countdownId = `countdown-${point.id}`;
+            popupContent += `
+              <div style="margin-top:8px;">
+                <strong>Reservado por: ${point.reservado_por || 'Desconocido'}</strong>
+                <div>Tiempo restante: <span id="${countdownId}">${point.tiempo_restante || 'N/A'}</span></div>
+                <button class="btn btn-danger btn-sm" style="margin-top: 5px;" onclick="cancelarReserva(${point.reserva_id})">Cancelar Reserva</button>
+              </div>
+            `;
+            setTimeout(() => updateRemainingTimeFromAPI(point.reserva_id, countdownId), 0);
           }
             // Botones de acción
           let botonesAccion = '';
@@ -723,5 +727,56 @@ setTimeout(() => {
       }
     });
   }
+
+  function cancelarReserva(reservaId) {
+    fetch(`/electrolineras/api/cancelar-reserva/${reservaId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Error al cancelar la reserva');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            alert(data.success);
+            location.reload();
+        } else {
+            alert(data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error al cancelar la reserva:', error);
+        alert('Ocurrió un error al intentar cancelar la reserva.');
+    });
+}
+
+function updateRemainingTimeFromAPI(reservaId, elementId) {
+    function fetchAndUpdate() {
+        fetch(`/electrolineras/api/reservas/${reservaId}/`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al obtener el tiempo restante desde la API');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const el = document.getElementById(elementId);
+                if (el && data.tiempo_restante) {
+                    el.textContent = data.tiempo_restante;
+                }
+            })
+            .catch(error => {
+                console.error('Error al actualizar el tiempo restante:', error);
+            });
+    }
+    fetchAndUpdate();
+    setInterval(fetchAndUpdate, 60000); // Actualizar cada minuto
+}
 </script>
 {% endblock %}
