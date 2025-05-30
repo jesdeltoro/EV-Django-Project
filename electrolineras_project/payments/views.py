@@ -300,7 +300,6 @@ class PagarFacturaView(TemplateView):
         else:
             context['mostrar_formulario'] = False
             context['error_mensaje'] = 'No tienes permiso para pagar esta factura.'
-        context['debug'] = True  # Fuerza el modo debug para mostrar el bloque de depuración
         return context
 
 
