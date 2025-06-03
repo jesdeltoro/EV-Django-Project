@@ -10,14 +10,17 @@ class PuntoRecargaSerializer(serializers.ModelSerializer):
     sesion_actual = serializers.SerializerMethodField()
     reserva_id = serializers.SerializerMethodField()
     tiempo_restante = serializers.SerializerMethodField()
+    es_reserva_usuario_actual = serializers.SerializerMethodField()  # New field
 
     class Meta:
         model = PuntoRecarga
-        fields = ("id", "nombre", "direccion", "latitud", "longitud", 
-                  "potencia_kw", "tipo_conector", "tipo_conector_nombre",
-                  "reservado", "reservado_por", "fecha_expiracion", "reserva_id",
-                  "estado", "energia_suministrada_total", "energia_actual_sesion",
-                  "sesion_actual", "tiempo_restante")
+        fields = (
+            "id", "nombre", "direccion", "latitud", "longitud", 
+            "potencia_kw", "tipo_conector", "tipo_conector_nombre",
+            "reservado", "reservado_por", "fecha_expiracion", "reserva_id",
+            "estado", "energia_suministrada_total", "energia_actual_sesion",
+            "sesion_actual", "tiempo_restante", "es_reserva_usuario_actual"  # Include new field
+        )
     
     def get_tipo_conector_nombre(self, obj):
         if obj.tipo_conector:
@@ -71,6 +74,15 @@ class PuntoRecargaSerializer(serializers.ModelSerializer):
             segundos_restantes = int(tiempo_restante % 60)
             return f"{minutos_restantes}:{segundos_restantes:02d}"
         return None
+
+    def get_es_reserva_usuario_actual(self, obj):
+        from django.utils import timezone
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            reserva = Reserva.objects.filter(punto=obj, fecha_expiracion__gt=timezone.now()).first()
+            if reserva:
+                return reserva.usuario == request.user
+        return False
 
 class ReservaSerializer(serializers.ModelSerializer):
     punto_nombre = serializers.CharField(source="punto.nombre", read_only=True)

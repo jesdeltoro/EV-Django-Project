@@ -34,6 +34,7 @@ class ReservaListCreateAPIView(APIView):
         )
         serializer = ReservaSerializer(reservas, many=True)
         return Response(serializer.data)
+
     def post(self, request):
         # Verificar si el usuario ya tiene una sesión de carga activa
         sesion_activa = SesionCarga.objects.filter(usuario=request.user, activa=True).first()
@@ -65,7 +66,8 @@ class ReservaListCreateAPIView(APIView):
                 'reserva_actual': {
                     'punto': punto_serializer.data,
                     'tiempo_restante': f"{minutos_restantes}:{segundos_restantes:02d}",
-                    'fecha_expiracion': reserva_usuario.fecha_expiracion
+                    'fecha_expiracion': reserva_usuario.fecha_expiracion,
+                    'reservado_por': reserva_usuario.usuario.username  # Include the name of the user who reserved
                 }
             }, status=status.HTTP_400_BAD_REQUEST)
         
