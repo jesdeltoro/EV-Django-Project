@@ -44,17 +44,32 @@ class PuntoRecargaSerializer(serializers.ModelSerializer):
         if reserva:
             return reserva.fecha_expiracion
         return None
-        
     def get_sesion_actual(self, obj):
         """Devuelve información sobre la sesión de carga activa, si existe"""
         sesion = SesionCarga.objects.filter(punto_recarga=obj, activa=True).first()
         if sesion:
+            # Calcular el costo estimado usando la tarifa actual
+            costo_sin_iva = 0
+            try:
+                from payments.models import TarifaEnergia
+                tarifa = TarifaEnergia.get_tarifa_actual()
+                if tarifa:
+                    costo_sin_iva = float(sesion.energia_consumida) * float(tarifa.precio_por_kwh)
+            except Exception:
+                # Si hay un error, usar un precio por defecto de 0.3€ por kWh
+                costo_sin_iva = sesion.energia_consumida * 0.3
+            
+            # Calcular costo con IVA (21%)
+            costo_con_iva = costo_sin_iva * 1.21
+            
             return {
                 "id": str(sesion.pk),  # Usar pk en lugar de id y convertir a string para evitar errores
                 "porcentaje_bateria": sesion.porcentaje_bateria_actual,
                 "energia_consumida": sesion.energia_consumida,
                 "tiempo_activa": (timezone.now() - sesion.inicio).total_seconds() // 60,
-                "usuario": sesion.usuario.username  # Nombre de usuario para verificar permisos
+                "usuario": sesion.usuario.username,  # Nombre de usuario para verificar permisos
+                "costo_sin_iva": round(costo_sin_iva, 2),  # Costo sin IVA redondeado a 2 decimales
+                "costo_con_iva": round(costo_con_iva, 2)   # Costo con IVA redondeado a 2 decimales
             }
         return None
 
@@ -100,13 +115,14 @@ class SesionCargaSerializer(serializers.ModelSerializer):
     tiempo_carga = serializers.SerializerMethodField()
     tiempo_restante_estimado = serializers.SerializerMethodField()
     username = serializers.CharField(source="usuario.username", read_only=True)
+    costo_estimado = serializers.SerializerMethodField()
     
     class Meta:
         model = SesionCarga
         fields = ("id", "reserva", "punto_recarga", "punto_nombre", "usuario", "username", "inicio", 
                  "fin", "activa", "porcentaje_bateria_inicial", "porcentaje_bateria_actual", 
                  "energia_consumida", "potencia_kw", "tipo_conector", "tiempo_carga",
-                 "tiempo_restante_estimado")
+                 "tiempo_restante_estimado", "costo_estimado")
         read_only_fields = ("reserva", "punto_recarga", "usuario", "inicio", "fin", 
                            "porcentaje_bateria_inicial", "energia_consumida")
     
@@ -148,3 +164,14 @@ class SesionCargaSerializer(serializers.ModelSerializer):
         tiempo_restante = porcentaje_restante / velocidad_carga  # minutos
         
         return round(tiempo_restante, 0)
+        
+    def get_costo_estimado(self, obj):
+        """Calcula el costo estimado usando la tarifa actual"""
+        try:
+            from payments.models import TarifaEnergia
+            tarifa = TarifaEnergia.get_tarifa_actual()
+            if tarifa:
+                return round(float(obj.energia_consumida) * float(tarifa.precio_por_kwh), 2)
+        except Exception:
+            # Si hay un error, usar un precio por defecto de 0.3€ por kWh
+            return round(obj.energia_consumida * 0.3, 2)
