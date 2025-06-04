@@ -258,29 +258,14 @@ class SesionCarga(models.Model):
         # Calcular la energía consumida teórica (kWh = kW * horas)
         energia_teorica = potencia * tiempo_transcurrido
         
-        # La batería típica de un vehículo eléctrico tiene entre 40-100 kWh
-        # Para simplificar, asumimos una batería de 75 kWh donde cada 1% representa 0.75 kWh
-        capacidad_bateria = 75  # kWh
+        # Ajustar la eficiencia al 100% para evitar pérdidas
+        self.energia_consumida = energia_teorica
         
-        # Incrementar la batería basado en la energía consumida
-        incremento_porcentaje = min(int(energia_teorica / capacidad_bateria * 100), 100 - self.porcentaje_bateria_actual)
+        # Actualizar también el punto de recarga
+        self.punto_recarga.energia_actual_sesion = self.energia_consumida
+        self.punto_recarga.save(update_fields=['energia_actual_sesion'])
         
-        # Si es una actualización forzada (manual), incrementamos al menos 1%
-        if forzar_actualizacion and incremento_porcentaje < 1 and self.porcentaje_bateria_actual < 100:
-            incremento_porcentaje = 1
-        
-        # Actualizar porcentaje y energía consumida
-        if incremento_porcentaje > 0:
-            self.porcentaje_bateria_actual += incremento_porcentaje
-            # La energía consumida real puede ser menor que la teórica por pérdidas
-            # Asumimos un 90% de eficiencia
-            self.energia_consumida = energia_teorica * 0.9
-            
-            # Actualizar también el punto de recarga
-            self.punto_recarga.energia_actual_sesion = self.energia_consumida
-            self.punto_recarga.save(update_fields=['energia_actual_sesion'])
-            
-            self.save(update_fields=['porcentaje_bateria_actual', 'energia_consumida'])
+        self.save(update_fields=['energia_consumida'])
         
         # Detener la sesión automáticamente si la batería llega al 100%
         if self.porcentaje_bateria_actual >= 100 and self.activa:
