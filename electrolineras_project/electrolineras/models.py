@@ -235,7 +235,6 @@ class SesionCarga(models.Model):
             logger = logging.getLogger(__name__)
             logger.error(f"Error procesando pago automático para sesión {self.id}: {e}")
             # El pago puede procesarse manualmente después
-    
     def actualizar_bateria(self, forzar_actualizacion=False):
         """
         Actualiza el porcentaje de batería y la energía consumida basado 
@@ -265,7 +264,13 @@ class SesionCarga(models.Model):
         self.punto_recarga.energia_actual_sesion = self.energia_consumida
         self.punto_recarga.save(update_fields=['energia_actual_sesion'])
         
-        self.save(update_fields=['energia_consumida'])
+        # Actualizar el porcentaje de batería basado en la energía consumida
+        # Asumimos una batería estándar de 50 kWh donde cada 0.5 kWh representa 1% de carga
+        incremento_porcentaje = int(self.energia_consumida / 0.5)
+        self.porcentaje_bateria_actual = min(100, self.porcentaje_bateria_inicial + incremento_porcentaje)
+        
+        # Guardar los cambios en la sesión
+        self.save(update_fields=['energia_consumida', 'porcentaje_bateria_actual'])
         
         # Detener la sesión automáticamente si la batería llega al 100%
         if self.porcentaje_bateria_actual >= 100 and self.activa:

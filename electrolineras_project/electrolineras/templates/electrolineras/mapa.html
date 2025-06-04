@@ -326,12 +326,19 @@
           if (point.estado === 'en_uso' && point.sesion_actual) {
             const porcentaje = point.sesion_actual.porcentaje_bateria;
             const sessionId = point.sesion_actual.id;
+              // Calcular costos estimados si no están incluidos en el API
+            let costoSinIVA = point.sesion_actual.costo_sin_iva || point.sesion_actual.energia_consumida * 0.3;
+            let costoConIVA = point.sesion_actual.costo_con_iva || costoSinIVA * 1.21;
             
             popupContent += `
               <div style="margin-top: 8px; border: 1px solid #ddd; padding: 8px; border-radius: 5px; background-color: #f8f9fa;">
                 <div style="margin-bottom: 5px;"><strong>Batería actual: <span id="bateria-${sessionId}">${porcentaje}%</span></strong></div>
                 <div style="margin-top: 5px;">Energía consumida: <span id="energia-${sessionId}">${point.sesion_actual.energia_consumida.toFixed(2)} kWh</span></div>
                 <div>Tiempo activa: <span id="tiempo-${sessionId}">${point.sesion_actual.tiempo_activa} minutos</span></div>
+                <div style="margin-top: 8px; padding-top: 5px; border-top: 1px dashed #ccc;">
+                  <div>Coste sin IVA: <span id="costo-sin-iva-${sessionId}">${costoSinIVA.toFixed(2)}€</span></div>
+                  <div><strong>Coste con IVA (21%): <span id="costo-con-iva-${sessionId}">${costoConIVA.toFixed(2)}€</span></strong></div>
+                </div>
               </div>
             `;
           }
@@ -559,6 +566,19 @@
           if (tiempoElement) {
             tiempoElement.textContent = `${data.tiempo_carga} minutos`;
           }
+
+          // Actualizar costos
+          const costoSinIvaElement = document.getElementById(`costo-sin-iva-${sessionId}`);
+          const costoConIvaElement = document.getElementById(`costo-con-iva-${sessionId}`);
+          
+          if (costoSinIvaElement && costoConIvaElement) {
+            // Calcular costos si no vienen en los datos
+            let costoSinIVA = data.costo_sin_iva || data.energia_consumida * 0.3;
+            let costoConIVA = data.costo_con_iva || costoSinIVA * 1.21;
+            
+            costoSinIvaElement.textContent = `${costoSinIVA.toFixed(2)}€`;
+            costoConIvaElement.textContent = `${costoConIVA.toFixed(2)}€`;
+          }
           
           // Si la sesión ya no está activa, detener las actualizaciones
           if (!data.activa) {
@@ -603,16 +623,27 @@
             })
             .then(data => {
                 console.log(`🔄 Datos recibidos para sesión ${sessionId}:`, data);
-                console.log(`🔋 Porcentaje actual: ${data.porcentaje_bateria_actual}%`);
-
-                // Actualizar solo el texto del porcentaje
+                console.log(`🔋 Porcentaje actual: ${data.porcentaje_bateria_actual}%`);                // Actualizar solo el texto del porcentaje
                 const bateriaElement = document.getElementById(`bateria-${sessionId}`);
                 if (bateriaElement) {
                     bateriaElement.textContent = `${data.porcentaje_bateria_actual}%`;
                     console.log(`✅ Texto de batería actualizado: ${data.porcentaje_bateria_actual}%`);
+                    
+                    // También actualizar los costos
+                    const costoSinIvaElement = document.getElementById(`costo-sin-iva-${sessionId}`);
+                    const costoConIvaElement = document.getElementById(`costo-con-iva-${sessionId}`);
+                    
+                    if (costoSinIvaElement && costoConIvaElement) {
+                        // Calcular costos si no vienen en los datos
+                        let costoSinIVA = data.costo_sin_iva || data.energia_consumida * 0.3;
+                        let costoConIVA = data.costo_con_iva || costoSinIVA * 1.21;
+                        
+                        costoSinIvaElement.textContent = `${costoSinIVA.toFixed(2)}€`;
+                        costoConIvaElement.textContent = `${costoConIVA.toFixed(2)}€`;
+                    }
                 } else {
                     console.warn(`⚠️ No se encontró el elemento bateria-${sessionId} para actualizar`);
-                }                // Si la carga llega al 99% o más, terminar automáticamente
+                }// Si la carga llega al 99% o más, terminar automáticamente
                 if (data.porcentaje_bateria_actual >= 99) {
                     console.log(`✅ Carga al ${data.porcentaje_bateria_actual}%. Terminando automáticamente la carga para sesión ${sessionId}`);
                     clearInterval(intervalo);
