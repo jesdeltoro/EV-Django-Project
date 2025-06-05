@@ -16,7 +16,7 @@
           {% if 'ok' in request.GET %}
             <div class="success-message">
               <strong>¡Página actualizada correctamente!</strong>
-              <a href="{% url 'pages:page' page.id page.title|slugify %}" class="success-link">Haz click aquí para ver el resultado</a>
+              <a href="{% url 'pages_app:page' page.id page.title|slugify %}" class="success-link">Haz click aquí para ver el resultado</a>
             </div>
           {% endif %}
           <form action="" method="POST">
