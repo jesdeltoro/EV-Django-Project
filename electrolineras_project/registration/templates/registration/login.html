@@ -46,8 +46,17 @@
 
 <main role="main">
   <div class="container">
-    <div class="row mt-3">
-      <div class="col-md-9 mx-auto mb-5">        {% if 'register' in request.GET %}
+    <div class="row mt-3">      <div class="col-md-9 mx-auto mb-5">
+        {% if 'verification_sent' in request.GET %}
+          <div class="alert alert-info">
+            Usuario registrado correctamente. Hemos enviado un correo electrónico con un enlace para activar tu cuenta.
+            Por favor, revisa tu correo y haz clic en el enlace de activación.
+          </div>
+        {% elif 'activated' in request.GET %}
+          <div class="alert alert-success">
+            ¡Tu cuenta ha sido activada correctamente! Ahora puedes iniciar sesión.
+          </div>
+        {% elif 'register' in request.GET %}
           <p style="color:green;">Usuario registrado correctamente, comprueba tu email, ya puedes identificarte.</p>
         {% endif %}
         <form action="" method="post">{% csrf_token %}
@@ -58,12 +67,14 @@
           <p>
             <input type="text" name="username" autofocus maxlength="254" required
               id="id_username" class="form-control" placeholder="Nombre de usuario"/>
-          </p>
-          <p>
+          </p>          <p>
             <input type="password" name="password" required
               id="id_password" class="form-control" placeholder="Contraseña"/>
           </p>
           <p><input type="submit" class="btn btn-primary btn-block" value="Acceder"></p>
+          <p class="mt-3 text-center">
+            <a href="{% url 'password_reset' %}" class="restore-password">¿Has olvidado tu contraseña?</a>
+          </p>
         </form>
         <p class="restore-password">
           ¿Ha olvidado su clave? Puede restaurarla <a href="{% url 'password_reset' %}">aquí</a>.
