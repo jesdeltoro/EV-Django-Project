@@ -51,10 +51,9 @@ Equipo del Sistema de Electrolineras''',
             )
         except Exception as e:
             # Si hay algún error con el email, no afectar el registro
-            print(f"Error enviando email de bienvenida: {e}")
-        
+            print(f"Error enviando email de bienvenida: {e}")        
         return response
-
+        
     def get_form(self, form_class=None):
         form = super(SignUpView, self).get_form()
         # Modificar en tiempo real
@@ -66,6 +65,10 @@ Equipo del Sistema de Electrolineras''',
             attrs={'class':'form-control mb-2', 'placeholder':'Contraseña'})
         form.fields['password2'].widget = forms.PasswordInput(
             attrs={'class':'form-control mb-2', 'placeholder':'Repite la contraseña'})
+        
+        # Personalizar las etiquetas de los campos de contraseña
+        form.fields['password1'].label = 'Contraseña'
+        form.fields['password2'].label = 'Contraseña (confirmación)'
         return form
 
 

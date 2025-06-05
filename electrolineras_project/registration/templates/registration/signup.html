@@ -45,10 +45,10 @@
     background-color: rgba(75, 0, 130, 1);
     border-color: rgba(75, 0, 130, 1);
   }
-
-  label {
-    color: white;
+  label, .white-label {
+    color: white !important;
     text-shadow: 1px 1px 2px black;
+    font-weight: bold;
   }
 
   .errorlist {
@@ -62,23 +62,40 @@
     font-style: italic;
     text-shadow: 1px 1px 2px black;
   }
-
-  .helptext {
-    color: white;
+  .helptext, .helptext * {
+    color: white !important;
     font-style: italic;
     text-shadow: 1px 1px 2px black;
   }
-
   .password-validation {
-    color: white;
+    color: white !important;
     font-style: italic;
     text-shadow: 2px 2px 4px black;
   }
 
   ul.errorlist li {
-    color: white;
+    color: white !important;
     font-style: italic;
     text-shadow: 1px 1px 2px black;
+  }
+  
+  /* Make all Django validation message text white */
+  .helptext ul {
+    color: white !important;
+  }
+    .helptext ul li {
+    color: white !important;
+  }
+  
+  /* Styles for the password validation list */
+  .password-validation-list {
+    list-style-type: disc;
+    color: white !important;
+    margin-left: 20px;
+    margin-bottom: 20px;
+    background-color: rgba(75, 0, 130, 0.5);
+    padding: 15px 15px 15px 35px;
+    border-radius: 8px;
   }
 </style>
 
@@ -89,15 +106,53 @@
 <main role="main">
   <div class="container">
     <div class="row mt-3">
-      <div class="col-md-9 mx-auto mb-5">
-        <form action="" method="post">{% csrf_token %}
+      <div class="col-md-9 mx-auto mb-5">        <form action="" method="post">{% csrf_token %}
           <h3 class="mb-4">Registro</h3>
-          {{form.as_p}}
+          <!-- Username field -->
+          <p>
+            <label for="id_username" class="white-label">{{ form.username.label }}:</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+              <small class="errorlist">{{ form.username.errors }}</small>
+            {% endif %}
+          </p>
+          
+          <!-- Email field -->
+          <p>
+            <label for="id_email" class="white-label">{{ form.email.label }}:</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+              <small class="errorlist">{{ form.email.errors }}</small>
+            {% endif %}
+          </p>
           <p class="field-hint">Requerido. 150 caracteres como máximo. Únicamente letras, dígitos y @/./+/-/_</p>
-          <p class="password-validation">Su contraseña no puede asemejarse tanto a su otra información personal.</p>
-          <p class="password-validation">Su contraseña debe contener al menos 8 caracteres.</p>
-          <p class="password-validation">Su contraseña no puede ser una clave utilizada comúnmente.</p>
-          <p class="password-validation">Su contraseña no puede ser completamente numérica.</p>
+          
+          <!-- Password field -->
+          <p>
+            <label for="id_password1" class="white-label">{{ form.password1.label }}:</label>
+            {{ form.password1 }}
+            {% if form.password1.errors %}
+              <small class="errorlist">{{ form.password1.errors }}</small>
+            {% endif %}
+          </p>
+          
+          <!-- Password confirmation field -->
+          <p>
+            <label for="id_password2" class="white-label">{{ form.password2.label }}:</label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}
+              <small class="errorlist">{{ form.password2.errors }}</small>
+            {% endif %}
+          </p>
+          
+          <!-- Password validation as unordered list -->
+          <ul class="password-validation-list">
+            <li class="password-validation">Su contraseña no puede asemejarse tanto a su otra información personal.</li>
+            <li class="password-validation">Su contraseña debe contener al menos 8 caracteres.</li>
+            <li class="password-validation">Su contraseña no puede ser una clave utilizada comúnmente.</li>
+            <li class="password-validation">Su contraseña no puede ser completamente numérica.</li>
+          </ul>
+          
           <p><input type="submit" class="btn btn-primary btn-block" value="Confirmar"></p>
         </form>
       </div>
