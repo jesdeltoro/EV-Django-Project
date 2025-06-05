@@ -5,10 +5,10 @@ from django.utils import timezone
 import sys
 import os
 
-# Añadir el directorio del proyecto al PATH para poder importar django_types
-project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
+# Establecer ruta para importar django_types desde el directorio principal del proyecto
+project_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if project_dir not in sys.path:
+    sys.path.insert(0, project_dir)
 
 # Importar funciones de ayuda para tipado
 from django_types import with_id
