@@ -89,10 +89,15 @@ class CrearPaymentIntentAPIView(APIView):
             except Factura.DoesNotExist:
                 logger.warning(f"Factura no encontrada: ID {factura_id}")
                 return Response({'error': 'Factura no encontrada'}, status=status.HTTP_404_NOT_FOUND)
-              # Validar monto mínimo antes de crear el PaymentIntent
+            
+            # Validar monto mínimo antes de crear el PaymentIntent
             if factura.total < Decimal('0.50'):
                 logger.warning(f"Factura {factura.pk} tiene un monto de {factura.total} EUR, menor que el mínimo de Stripe (0.50 EUR)")
-                # No devolver error, permitir que continúe con el mínimo
+                # Actualizar el total de la factura al mínimo requerido por Stripe
+                original_total = factura.total
+                factura.total = Decimal('0.50')
+                factura.save()
+                logger.info(f"Factura {factura.pk} actualizada de {original_total} EUR a {factura.total} EUR para cumplir con el mínimo de Stripe")
             
             # Crear PaymentIntent en Stripe
             try:
