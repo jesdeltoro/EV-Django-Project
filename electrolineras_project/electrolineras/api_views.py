@@ -226,14 +226,19 @@ class DetenerCargaAPIView(APIView):
         
         # Detener la sesión de carga
         sesion.detener_carga()
-        
-        # Devolver la información de la sesión finalizada
+          # Devolver la información de la sesión finalizada
         serializer = SesionCargaSerializer(sesion)
         data = serializer.data
         # Incluir factura generada para iniciar el pago
         factura = getattr(sesion, 'factura', None)
         if factura and factura.estado == 'pendiente':  # type: ignore
             data['factura_id'] = factura.id
+            print(f"✅ Factura con ID {factura.id} incluida en respuesta para redireccionar")
+        else:
+            print("⚠️ No se encontró una factura pendiente asociada a la sesión")
+            if factura:
+                print(f"ℹ️ Factura existente en estado: {factura.estado}")
+            
         return Response(data, status=status.HTTP_200_OK)
 
 
@@ -249,14 +254,22 @@ class EstadoCargaAPIView(APIView):
         if not sesion_id:
             # Si no se proporciona un ID, devolver todas las sesiones del usuario
             sesiones = SesionCarga.objects.filter(usuario=request.user)
-            
-            # Para cada sesión activa, actualizar el porcentaje de batería automáticamente
+              # Para cada sesión activa, actualizar el porcentaje de batería automáticamente
             for sesion in sesiones:
                 if sesion.activa:
                     sesion.actualizar_bateria()
             
             serializer = SesionCargaSerializer(sesiones, many=True)
-            return Response(serializer.data)
+            data = serializer.data
+            
+            # Para cada sesión, agregar la factura_id si existe
+            for i, sesion in enumerate(sesiones):
+                if not sesion.activa:
+                    factura = getattr(sesion, 'factura', None)
+                    if factura and factura.estado == 'pendiente':
+                        data[i]['factura_id'] = factura.id
+            
+            return Response(data)
         
         try:
             # Obtener la sesión específica
@@ -268,13 +281,21 @@ class EstadoCargaAPIView(APIView):
                     {'error': 'No tienes permiso para ver esta sesión'}, 
                     status=status.HTTP_403_FORBIDDEN
                 )
-            
-            # Actualizar automáticamente el porcentaje de batería si la sesión está activa
+              # Actualizar automáticamente el porcentaje de batería si la sesión está activa
             if sesion.activa:
                 sesion.actualizar_bateria()
                 
             serializer = SesionCargaSerializer(sesion)
-            return Response(serializer.data)
+            data = serializer.data
+            
+            # Incluir factura generada si la sesión no está activa (terminada)
+            if not sesion.activa:
+                # Agregar el ID de la factura en la respuesta para facilitar la redirección
+                factura = getattr(sesion, 'factura', None)
+                if factura and factura.estado == 'pendiente':
+                    data['factura_id'] = factura.id
+            
+            return Response(data)
         except SesionCarga.DoesNotExist:
             return Response(
                 {'error': 'Sesión de carga no encontrada'}, 
