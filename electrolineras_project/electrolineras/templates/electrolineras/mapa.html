@@ -63,7 +63,36 @@
     background-color: white;
   }
     /* Eliminamos la animación para la barra de progreso */
+    
+  /* Estilo para el mensaje de redirección */
+  #redirect-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 20px;
+    border-radius: 5px;
+    z-index: 10000;
+    text-align: center;
+    display: none;
+  }
+  
+  #redirect-message .spinner-border {
+    margin: 10px auto;
+    display: block;
+  }
 </style>
+
+<!-- Mensaje de redirección -->
+<div id="redirect-message">
+  <h4>Procesando pago...</h4>
+  <div class="spinner-border text-light" role="status">
+    <span class="visually-hidden">Cargando...</span>
+  </div>
+  <p>Redirigiendo a la pantalla de pago</p>
+</div>
 
 <!-- JavaScript de Leaflet y MarkerCluster -->
 <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
@@ -129,6 +158,13 @@
   function cancelarCarga(sesionId, popupElement, esAutomatico = false) {
     console.log(`🛑 Intentando cancelar carga para sesión ${sesionId}. Automático: ${esAutomatico}`);
     
+    // Verificar si ya hay una redirección en curso
+    const redireccionEnCurso = localStorage.getItem('redireccionEnCurso');
+    if (redireccionEnCurso) {
+      console.log('⚠️ Ya hay una redirección en curso. Evitando operación duplicada.');
+      return;
+    }
+    
     // Variable para almacenar el ID de la factura si se obtiene antes de finalizar
     let facturaId = null;
     
@@ -151,16 +187,19 @@
           // Si la sesión ya no existe, intentar ir a la última factura del usuario
           if (response.status === 404) {
             console.log('Sesión no encontrada, verificando última factura del usuario...');
-            // Redireccionar a la página de facturas sin mostrar error
-            window.location.href = '/payments/facturas/';
-            throw new Error('Sesión finalizada. Redirigiendo a facturas.');
+            // Mostrar mensaje de redirección
+            mostrarMensajeRedireccion("Buscando información...", "Verificando datos de su sesión");
+            localStorage.setItem('redireccionEnCurso', 'true');
+            buscarUltimaFactura();
+            throw new Error('Sesión finalizada. Buscando facturas.');
           }
           return response.json().then(data => {
             throw new Error(data.error || 'Error al verificar la sesión de carga');
           });
         }
         return response.json();
-      })      .then(data => {
+      })
+      .then(data => {
         // Si la sesión no pertenece al usuario actual, mostrar error
         if (data.username !== '{{ user.username }}') {
           throw new Error('No puedes terminar una carga iniciada por otro usuario');
@@ -174,7 +213,10 @@
           // Si la sesión ya está inactiva, redirigir directamente
           if (!data.activa) {
             console.log(`La sesión ${sesionId} ya está inactiva, redirigiendo a factura ${facturaId}`);
-            window.location.href = '/payments/pagar/' + facturaId + '/';
+            // Mostrar mensaje de redirección
+            mostrarMensajeRedireccion("Carga finalizada", "Redirigiendo a la pantalla de pago");
+            localStorage.setItem('redireccionEnCurso', 'true');
+            verificarYRedirigirAFactura(facturaId, 1);
             return Promise.reject(new Error('Redirección en curso'));
           }
         }
@@ -191,21 +233,28 @@
         const debeProceeder = confirm('¿Estás seguro de que quieres terminar esta carga?');
         
         if (debeProceeder) {
+          // Mostrar mensaje de procesando
+          mostrarMensajeRedireccion("Finalizando carga...", "Por favor espere");
+          
           // Usar la nueva función para detener directamente
           params.facturaId = facturaId; // Pasar la factura_id si ya la tenemos
           return detenerCargaDirectamente(params);
         } else {
           throw new Error('Operación cancelada por el usuario');
         }
-      })      .catch(error => {
+      })
+      .catch(error => {
         // No mostrar errores si ya estamos en proceso de redirección
-        if (error.message !== 'Redirección en curso') {
+        if (error.message !== 'Redirección en curso' && error.message !== 'Sesión finalizada. Buscando facturas.') {
           console.error('Error al verificar carga:', error);
           // Si es automático, redireccionar a facturas sin mostrar mensaje
           if (esAutomatico) {
             console.log('Carga automática: redirigiendo a facturas sin mostrar error');
-            window.location.href = '/payments/facturas/';
+            localStorage.setItem('redireccionEnCurso', 'true');
+            redirigirAFacturas();
           } else {
+            ocultarMensajeRedireccion();
+            localStorage.removeItem('redireccionEnCurso');
             alert('Error: ' + error.message);
           }
         }
@@ -640,18 +689,19 @@
                         
                         costoSinIvaElement.textContent = `${costoSinIVA.toFixed(2)}€`;
                         costoConIvaElement.textContent = `${costoConIVA.toFixed(2)}€`;
-                    }
-                } else {
+                    }                } else {
                     console.warn(`⚠️ No se encontró el elemento bateria-${sessionId} para actualizar`);
-                }// Si la carga llega al 99% o más, terminar automáticamente
+                }
+                
+                // Si la carga llega al 99% o más, terminar automáticamente
                 if (data.porcentaje_bateria_actual >= 99) {
                     console.log(`✅ Carga al ${data.porcentaje_bateria_actual}%. Terminando automáticamente la carga para sesión ${sessionId}`);
-                    clearInterval(intervalo);
-                    
-                    // Si ya tenemos factura_id, ir directamente a la página de pago
+                    clearInterval(intervalo);                // Si ya tenemos factura_id, ir directamente a la página de pago
                     if (data.factura_id) {
                         console.log(`✅ Ya existe factura ID ${data.factura_id}, redirigiendo directamente`);
-                        window.location.href = `/payments/pagar/${data.factura_id}/`;
+                        // Mostrar mensaje de redirección
+                        mostrarMensajeRedireccion("¡Carga completa!", "Redirigiendo a la pantalla de pago");
+                        verificarYRedirigirAFactura(data.factura_id, 1);
                         return;
                     }
                     
@@ -662,18 +712,27 @@
                         facturaId: data.factura_id || null
                     });
                     return;
-                }
-
-                // Redirigir si la carga finaliza
+                }// Redirigir si la carga finaliza
                 if (!data.activa) {
                     console.log(`🛑 Sesión ${sessionId} ya no está activa.`);
-                    clearInterval(intervalo);
+                    clearInterval(intervalo);                    
+                    // Verificar si ya hay una redirección en curso
+                    const redireccionEnCurso = localStorage.getItem('redireccionEnCurso');
+                    if (redireccionEnCurso) {
+                        console.log('⚠️ Ya hay una redirección en curso. Evitando operación duplicada.');
+                        return;
+                    }
+                    
                     if (data.factura_id) {
                         console.log(`✅ Redirigiendo a pagar factura con ID: ${data.factura_id}`);
-                        window.location.href = `/payments/pagar/${data.factura_id}/`;
+                        // Mostrar mensaje de redirección
+                        mostrarMensajeRedireccion("¡Carga finalizada!", "Redirigiendo a la pantalla de pago");
+                        localStorage.setItem('redireccionEnCurso', 'true');
+                        verificarYRedirigirAFactura(data.factura_id, 1);
                     } else {
-                        console.warn('⚠️ Carga finalizada pero no se generó factura. Recargando página.');
-                        location.reload();
+                        console.warn('⚠️ Carga finalizada pero no se generó factura. Buscando última factura...');
+                        localStorage.setItem('redireccionEnCurso', 'true');
+                        buscarUltimaFactura();
                     }
                 }
             })
@@ -709,15 +768,22 @@ function iniciarActualizacionDinamica() {
         console.log(`✅ Iniciando monitoreo para sesión ID: ${sessionId}`);
         actualizarEstadoCarga(sessionId);
     });
-}
-
-// Función para comprobar si hay sesiones de carga activas cada 10 segundos
+}  // Función para comprobar si hay sesiones de carga activas cada 10 segundos
 function verificarSesionesActivas() {
     console.log('🔄 Verificando si hay nuevas sesiones de carga activas...');
-    iniciarActualizacionDinamica();
     
-    // Programar la siguiente verificación
-    setTimeout(verificarSesionesActivas, 10000);
+    // No iniciar nuevas actualizaciones si hay una redirección en curso
+    const redireccionEnCurso = localStorage.getItem('redireccionEnCurso');
+    if (redireccionEnCurso) {
+        console.log('⚠️ Redirección en curso, omitiendo verificación de sesiones activas');
+    } else {
+        iniciarActualizacionDinamica();
+    }
+    
+    // Programar la siguiente verificación solo si no hay redirección en curso
+    if (!redireccionEnCurso) {
+        setTimeout(verificarSesionesActivas, 10000);
+    }
 }
 
 // Iniciar la carga de puntos y la actualización dinámica
@@ -730,10 +796,32 @@ setTimeout(() => {
     verificarSesionesActivas();
 }, 2000);
 
+// Limpiar la bandera de redirección en curso al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔄 Página cargada, limpiando estado de redirección');
+    localStorage.removeItem('redireccionEnCurso');
+});
+
+// Limpiar la bandera de redirección también cuando la página se cierra o recarga
+window.addEventListener('beforeunload', function() {
+    console.log('🔄 Página descargada, limpiando estado de redirección');
+    localStorage.removeItem('redireccionEnCurso');
+});
+
   // Función para detener la carga directamente sin verificación previa
   function detenerCargaDirectamente(params) {
     const { sesion_id, esAutomatico } = params;
     console.log(`🚨 Deteniendo carga directamente para sesión ${sesion_id}. Automático: ${esAutomatico}`);
+    
+    // Verificar si ya hay una redirección en curso
+    const redireccionEnCurso = localStorage.getItem('redireccionEnCurso');
+    if (redireccionEnCurso) {
+      console.log('⚠️ Ya hay una redirección en curso. Evitando operación duplicada.');
+      return;
+    }
+    
+    // Marcar que hay una redirección en curso
+    localStorage.setItem('redireccionEnCurso', 'true');
     
     // Limpiar cualquier intervalo pendiente antes de proceder
     limpiarIntervalo(sesion_id);
@@ -752,7 +840,7 @@ setTimeout(() => {
         // Si la respuesta no es exitosa, pero es una carga automática, no mostrar error al usuario
         if (esAutomatico) {
           console.error('Error al detener carga automáticamente, redirigiendo a facturas');
-          window.location.href = '/payments/facturas/';
+          redirigirAFacturas();
           return null; // Prevenir ejecución adicional
         }
         return response.json().then(data => {
@@ -768,24 +856,108 @@ setTimeout(() => {
       console.log('Respuesta de finalización de carga:', data);
       
       if (data.factura_id) {
-        console.log(`✅ Redirigiendo a factura con ID: ${data.factura_id}`);
-        // Redirigir directamente sin alert para evitar bloqueos
-        window.location.href = '/payments/pagar/' + data.factura_id + '/';
+        console.log(`✅ Factura encontrada con ID: ${data.factura_id}`);
+        
+        // Mostrar mensaje de redirección
+        mostrarMensajeRedireccion("Procesando pago...", "Redirigiendo a la pantalla de pago");
+        
+        // Intentar verificar la factura y redirigir
+        verificarYRedirigirAFactura(data.factura_id, 1);
       } else {
-        console.warn('⚠️ No se encontró ID de factura, redirigiendo a listado de facturas');
-        window.location.href = '/payments/facturas/';
+        console.warn('⚠️ No se encontró ID de factura, intentando obtener la última factura');
+        // Intentamos buscar la última factura del usuario
+        buscarUltimaFactura();
       }
     })
     .catch(error => {
       // Si es automático, no mostrar errores al usuario
       if (esAutomatico) {
         console.error('Error silenciado (carga automática):', error.message);
-        window.location.href = '/payments/facturas/';
+        redirigirAFacturas();
       } else {
         console.error('Error al finalizar carga:', error);
+        localStorage.removeItem('redireccionEnCurso');
         alert('Error: ' + error.message);
       }
     });
+  }
+  
+  // Función para mostrar el mensaje de redirección
+  function mostrarMensajeRedireccion(titulo, mensaje) {
+    const redirectMsg = document.getElementById('redirect-message');
+    if (redirectMsg) {
+      const h4 = redirectMsg.querySelector('h4');
+      const p = redirectMsg.querySelector('p');
+      
+      if (h4) h4.textContent = titulo;
+      if (p) p.textContent = mensaje;
+      
+      redirectMsg.style.display = 'block';
+    }
+  }
+  
+  // Función para ocultar el mensaje de redirección
+  function ocultarMensajeRedireccion() {
+    const redirectMsg = document.getElementById('redirect-message');
+    if (redirectMsg) {
+      redirectMsg.style.display = 'none';
+    }
+  }
+  
+  // Función para verificar que la factura existe y redirigir
+  function verificarYRedirigirAFactura(facturaId, intento) {
+    console.log(`🔍 Verificando factura ${facturaId} (intento ${intento})`);
+    
+    // Simular una verificación de la factura (idealmente aquí habría una llamada a una API)
+    // Por ahora, simplemente redirigimos después de un tiempo
+    setTimeout(function() {
+      console.log(`✅ Redirigiendo a factura con ID: ${facturaId}`);
+      localStorage.removeItem('redireccionEnCurso');
+      window.location.href = '/payments/pagar/' + facturaId + '/';
+    }, 1500); // Aumentamos el tiempo de espera a 1.5 segundos
+  }
+    // Función para buscar la última factura del usuario
+  function buscarUltimaFactura() {
+    console.log('🔍 Buscando última factura del usuario...');
+    mostrarMensajeRedireccion("Procesando información...", "Buscando su factura más reciente");
+    
+    // Llamar a la API de facturas para obtener la más reciente
+    fetch('/payments/api/facturas/')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Error al obtener las facturas');
+        }
+        return response.json();
+      })
+      .then(facturas => {
+        console.log('Facturas obtenidas:', facturas);
+        
+        // Buscar la factura más reciente con estado pendiente
+        const facturaReciente = facturas.find(f => f.estado === 'pendiente');
+        
+        if (facturaReciente) {
+          console.log(`✅ Factura pendiente encontrada con ID: ${facturaReciente.id}`);
+          verificarYRedirigirAFactura(facturaReciente.id, 1);
+        } else {
+          console.warn('⚠️ No se encontró ninguna factura pendiente');
+          redirigirAFacturas();
+        }
+      })
+      .catch(error => {
+        console.error('Error al buscar la última factura:', error);
+        redirigirAFacturas();
+      });
+  }
+  
+  // Función para redirigir a la página de facturas
+  function redirigirAFacturas() {
+    console.warn('⚠️ Redirigiendo al listado de facturas');
+    mostrarMensajeRedireccion("Procesando información...", "Redirigiendo al listado de facturas");
+    
+    setTimeout(function() {
+      localStorage.removeItem('redireccionEnCurso');
+      window.location.href = '/payments/facturas/';
+    }, 1500);
   }
 
   function cancelarReserva(reservaId) {

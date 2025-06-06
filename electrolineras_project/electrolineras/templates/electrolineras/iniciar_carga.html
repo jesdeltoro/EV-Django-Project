@@ -241,18 +241,46 @@
                 console.error('❌ No se encontró el elemento para mostrar la energía consumida');
             }
             
-            // Si la carga ya no está activa, detener la consulta
-            // Agregar mensajes de depuración para verificar los valores de data.factura_id y data.activa
+            // Si la carga ya no está activa, detener la consulta            // Agregar mensajes de depuración para verificar los valores de data.factura_id y data.activa
             console.log('🔍 Verificando estado de carga:', data);
             
-            if (!data.activa) {
+            // Si la batería llegó al 100%, terminamos automáticamente
+            if (data.porcentaje_bateria_actual >= 100 && data.activa) {
+                console.log('🔋 Batería al 100% - Finalizando carga automáticamente');
+                // Detenemos la carga para esta sesión
+                fetch('/electrolineras/api/detener-carga/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ sesion_id: sesionId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('✅ Carga finalizada automáticamente', data);
+                    if (data.factura_id) {
+                        console.log('✅ Redirigiendo a la pantalla de pago. Factura ID:', data.factura_id);
+                        window.location.href = '/payments/pagar/' + data.factura_id + '/';
+                    } else {
+                        console.warn('⚠️ No se encontró factura ID. Redirigiendo a facturas.');
+                        window.location.href = '/payments/facturas/';
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Error al finalizar carga automáticamente:', error);
+                    window.location.href = '/payments/facturas/';
+                });
+            }
+            // Si la sesión ya no está activa (terminó por otra razón)
+            else if (!data.activa) {
                 console.log('✅ La carga ha finalizado. Estado activa:', data.activa);
                 if (data.factura_id) {
                     console.log('✅ Redirigiendo a la pantalla de pago. Factura ID:', data.factura_id);
                     window.location.href = '/payments/pagar/' + data.factura_id + '/';
                 } else {
-                    console.warn('⚠️ No se encontró factura ID. Recargando la página.');
-                    window.location.reload();
+                    console.warn('⚠️ No se encontró factura ID. Redirigiendo a facturas.');
+                    window.location.href = '/payments/facturas/';
                 }
             }
         })

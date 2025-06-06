@@ -116,16 +116,17 @@ class SesionCargaSerializer(serializers.ModelSerializer):
     tiempo_restante_estimado = serializers.SerializerMethodField()
     username = serializers.CharField(source="usuario.username", read_only=True)
     costo_estimado = serializers.SerializerMethodField()
+    factura_id = serializers.SerializerMethodField()
     
     class Meta:
         model = SesionCarga
         fields = ("id", "reserva", "punto_recarga", "punto_nombre", "usuario", "username", "inicio", 
                  "fin", "activa", "porcentaje_bateria_inicial", "porcentaje_bateria_actual", 
                  "energia_consumida", "potencia_kw", "tipo_conector", "tiempo_carga",
-                 "tiempo_restante_estimado", "costo_estimado")
+                 "tiempo_restante_estimado", "costo_estimado", "factura_id")
         read_only_fields = ("reserva", "punto_recarga", "usuario", "inicio", "fin", 
                            "porcentaje_bateria_inicial", "energia_consumida")
-    
+
     def get_tiempo_carga(self, obj):
         """Calcula el tiempo de carga en minutos"""
         if obj.activa:
@@ -175,3 +176,13 @@ class SesionCargaSerializer(serializers.ModelSerializer):
         except Exception:
             # Si hay un error, usar un precio por defecto de 0.3€ por kWh
             return round(obj.energia_consumida * 0.3, 2)
+            
+    def get_factura_id(self, obj):
+        """Obtiene el ID de la factura asociada a la sesión de carga, si existe"""
+        try:
+            factura = getattr(obj, 'factura', None)
+            if factura and factura.estado == 'pendiente':
+                return factura.id
+        except Exception:
+            pass
+        return None
