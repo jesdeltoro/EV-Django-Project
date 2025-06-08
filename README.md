@@ -88,9 +88,8 @@ Se ha configurado un archivo `.gitignore` completo que excluye:
 #### 📁 Estructura Recomendada
 La estructura actual del proyecto sigue las mejores prácticas de Django, con un directorio anidado `electrolineras_project` que contiene la configuración principal. Para distribuir el proyecto:
 
-1. Usar el script `preparar_distribucion.py`
-2. Revisar que solo se incluyan los archivos necesarios
-3. Versionar solo el código fuente y recursos necesarios, excluyendo archivos temporales o generados
+1. Revisar que solo se incluyan los archivos necesarios
+2. Versionar solo el código fuente y recursos necesarios, excluyendo archivos temporales o generados
 
 ### 2.4 Aplicaciones del Sistema
 
