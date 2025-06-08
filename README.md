@@ -85,13 +85,6 @@ Se ha configurado un archivo `.gitignore` completo que excluye:
 - Configuraciones de editores
 - Directorios temporales
 
-#### 🔧 Script de Distribución
-El proyecto incluye un script `preparar_distribucion.py` que genera una versión limpia del proyecto:
-```bash
-python preparar_distribucion.py
-```
-Este script crea una copia del proyecto excluyendo todos los archivos y carpetas innecesarios definidos en el `.gitignore`, creando una versión lista para distribución en una carpeta adyacente.
-
 #### 📁 Estructura Recomendada
 La estructura actual del proyecto sigue las mejores prácticas de Django, con un directorio anidado `electrolineras_project` que contiene la configuración principal. Para distribuir el proyecto:
 
