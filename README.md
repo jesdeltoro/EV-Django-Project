@@ -49,17 +49,13 @@ Con el crecimiento del parque de vehículos eléctricos, existe una necesidad re
 
 ```
 EV-Django-Project/
-├── crear_tarea_programada.ps1         # Script PowerShell para programar tareas automáticas
-├── iniciar_app.ps1                    # Script PowerShell para iniciar la app automáticamente
-├── instalar_servicio.ps1              # Script PowerShell para instalar como servicio en Windows
-├── EV-Django-Project.code-workspace   # Configuración del espacio de trabajo para VS Code
+├── .gitignore                         # Configuración de archivos a ignorar en Git
+├── preparar_distribucion.py           # Script para generar versión de distribución limpia
 ├── README.md                          # Documentación principal del proyecto
 ├── requirements.txt                   # Lista de dependencias del proyecto
-├── test_api.py                        # Pruebas automatizadas para la API
 ├── electrolineras_project/            # Carpeta principal del proyecto Django
 │   ├── manage.py                      # Comando principal para administrar Django
 │   ├── db.sqlite3                     # Base de datos SQLite utilizada en desarrollo
-│   ├── debug_serializer.py            # Utilidad para depuración y serialización de datos
 │   ├── core/                          # Aplicación principal (core) del proyecto
 │   ├── electrolineras/                # App para la gestión de electrolineras
 │   ├── pages/                         # App para la gestión de páginas estáticas o dinámicas
@@ -67,17 +63,43 @@ EV-Django-Project/
 │   ├── payments/                      # App para gestión de pagos y transacciones
 │   ├── profiles/                      # App para gestión de perfiles de usuario
 │   ├── registration/                  # App para gestión de registro y autenticación
-│   ├── sent_emails/                   # Carpeta para almacenamiento de emails enviados (desarrollo)
 │   └── electrolineras_project/        # Configuración principal de la instancia Django
 │       ├── __init__.py                # Inicialización del paquete de configuración
 │       ├── settings.py                # Configuración global del proyecto Django
 │       ├── urls.py                    # Definición de rutas/URLs del proyecto
 │       └── wsgi.py                    # Punto de entrada para servidores WSGI
-└── Recursos/                          # Carpeta para recursos adicionales (imágenes, documentación, etc.)
+├── Recursos/                          # Carpeta para recursos adicionales (documentación, etc.)
+└── test/                              # Carpeta con scripts de prueba (no incluida en distribución)
 ```
 
 
-### 2.3 Aplicaciones del Sistema
+### 2.3 Distribución y Versionado del Proyecto
+
+Para mantener un código limpio y facilitar la distribución del proyecto, se han implementado las siguientes soluciones:
+
+#### 📦 Archivo .gitignore
+Se ha configurado un archivo `.gitignore` completo que excluye:
+- Archivos compilados (\_\_pycache\_\_, *.pyc, etc.)
+- Entornos virtuales (.venv, venv)
+- Archivos de base de datos y logs
+- Configuraciones de editores
+- Directorios temporales
+
+#### 🔧 Script de Distribución
+El proyecto incluye un script `preparar_distribucion.py` que genera una versión limpia del proyecto:
+```bash
+python preparar_distribucion.py
+```
+Este script crea una copia del proyecto excluyendo todos los archivos y carpetas innecesarios definidos en el `.gitignore`, creando una versión lista para distribución en una carpeta adyacente.
+
+#### 📁 Estructura Recomendada
+La estructura actual del proyecto sigue las mejores prácticas de Django, con un directorio anidado `electrolineras_project` que contiene la configuración principal. Para distribuir el proyecto:
+
+1. Usar el script `preparar_distribucion.py`
+2. Revisar que solo se incluyan los archivos necesarios
+3. Versionar solo el código fuente y recursos necesarios, excluyendo archivos temporales o generados
+
+### 2.4 Aplicaciones del Sistema
 
 #### 📝 Aplicación Pages (Gestión de Blog)
 **Propósito**: Sistema de gestión de contenido para noticias y blog del sitio web.
