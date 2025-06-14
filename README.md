@@ -210,7 +210,7 @@ class Profile(models.Model):
 #### 💳 Aplicación Payments (Sistema de Pagos)
 
 **Propósito:**  
-La aplicación `payments` gestiona la facturación y los pagos de sesiones de carga para usuarios registrados, integrando procesamiento real con Stripe para simular un entorno profesional y seguro de transacciones. Permite que cada usuario visualice sus facturas, consulte tarifas, realice pagos y acceda a estadísticas de consumo y gasto.
+La aplicación `payments` gestiona la facturación y los pagos de sesiones de carga para usuarios registrados, integrando procesamiento real con Stripe para simular un entorno profesional y seguro de transacciones. Permite que cada usuario visualice sus facturas, consulte tarifas (próximamente), realice pagos y acceda a estadísticas de consumo y gasto.
 
 **Funcionalidades principales:**
 - **Generación automática de facturas** al finalizar cada sesión de carga.
