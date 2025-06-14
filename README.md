@@ -2,7 +2,7 @@
 ## SISTEMA DE GESTIÓN DE ELECTROLINERAS
 ### Trabajo Fin de Grado - FP DAM
 ### Autor: Julio Schneider Estop
-### Fecha: Mayo 2025
+### Fecha: junio 2025
 
 ---
 
