@@ -1,8 +1,12 @@
 # DOCUMENTACIÓN TÉCNICA
-## SISTEMA DE GESTIÓN DE ELECTROLINERAS
-### Trabajo Fin de Grado - FP DAM
-### Autor: Julio Schneider Estop
-### Fecha: Mayo 2025
+
+## EvEMaps: Sistema de Localización de Puntos de Recarga para Vehículos Eléctricos
+
+**Autor:** Julio Schneider Estop  
+**CFGS Desarrollo de Aplicaciones Multiplataforma**  
+**Instituto de Educación Secundaria Portada Alta**  
+**Trabajo fin de grado – Formación Profesional**  
+**Fecha:** Junio 2025
 
 ---
 
@@ -85,19 +89,11 @@ Se ha configurado un archivo `.gitignore` completo que excluye:
 - Configuraciones de editores
 - Directorios temporales
 
-#### 🔧 Script de Distribución
-El proyecto incluye un script `preparar_distribucion.py` que genera una versión limpia del proyecto:
-```bash
-python preparar_distribucion.py
-```
-Este script crea una copia del proyecto excluyendo todos los archivos y carpetas innecesarios definidos en el `.gitignore`, creando una versión lista para distribución en una carpeta adyacente.
-
 #### 📁 Estructura Recomendada
 La estructura actual del proyecto sigue las mejores prácticas de Django, con un directorio anidado `electrolineras_project` que contiene la configuración principal. Para distribuir el proyecto:
 
-1. Usar el script `preparar_distribucion.py`
-2. Revisar que solo se incluyan los archivos necesarios
-3. Versionar solo el código fuente y recursos necesarios, excluyendo archivos temporales o generados
+1. Revisar que solo se incluyan los archivos necesarios
+2. Versionar solo el código fuente y recursos necesarios, excluyendo archivos temporales o generados
 
 ### 2.4 Aplicaciones del Sistema
 
@@ -214,7 +210,7 @@ class Profile(models.Model):
 #### 💳 Aplicación Payments (Sistema de Pagos)
 
 **Propósito:**  
-La aplicación `payments` gestiona la facturación y los pagos de sesiones de carga para usuarios registrados, integrando procesamiento real con Stripe para simular un entorno profesional y seguro de transacciones. Permite que cada usuario visualice sus facturas, consulte tarifas, realice pagos y acceda a estadísticas de consumo y gasto.
+La aplicación `payments` gestiona la facturación y los pagos de sesiones de carga para usuarios registrados, integrando procesamiento real con Stripe para simular un entorno profesional y seguro de transacciones. Permite que cada usuario visualice sus facturas, consulte tarifas (próximamente), realice pagos y acceda a estadísticas de consumo y gasto.
 
 **Funcionalidades principales:**
 - **Generación automática de facturas** al finalizar cada sesión de carga.
@@ -739,8 +735,8 @@ Este documento constituye la documentación técnica completa del proyecto "Sist
 
 **Autor**: Julio Schneider Estop  
 **Repositorio**: https://github.com/jesdeltoro/EV-Django-Project  
-**Fecha**: Mayo 2024  
-**Tecnología Principal**: Django 5.2.1 + Python  
+**Fecha**: Junio 2025  
+**Tecnología Principal**: Django 5.2.1 + Python
 
 El proyecto demuestra competencias en:
 - Desarrollo web full-stack
