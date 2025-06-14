@@ -5,8 +5,7 @@
 ### Trabajo Fin de Grado - FP DAM
 
 ### Autor: Julio Schneider Estop
-
-### Fecha: Junio 2025
+### Fecha: Mayo 2025
 
 ---
 
