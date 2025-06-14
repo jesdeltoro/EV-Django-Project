@@ -46,6 +46,7 @@ media/
 *~
 .DS_Store
 EV-Django-Project.code-workspace
+.markdownlint.json
 
 # Custom exclusions
 /test/
