@@ -1,11 +1,12 @@
 # DOCUMENTACIÓN TÉCNICA
 
-## SISTEMA DE GESTIÓN DE ELECTROLINERAS
+## EvEMaps: Sistema de Localización de Puntos de Recarga para Vehículos Eléctricos
 
-### Trabajo Fin de Grado - FP DAM
-
-### Autor: Julio Schneider Estop
-### Fecha: junio 2025
+**Autor:** Julio Schneider Estop  
+**CFGS Desarrollo de Aplicaciones Multiplataforma**  
+**Instituto de Educación Secundaria Portada Alta**  
+**Trabajo fin de grado – Formación Profesional**  
+**Fecha:** Junio 2025
 
 ---
 
