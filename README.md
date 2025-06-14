@@ -1,8 +1,12 @@
 # DOCUMENTACIÓN TÉCNICA
+
 ## SISTEMA DE GESTIÓN DE ELECTROLINERAS
+
 ### Trabajo Fin de Grado - FP DAM
+
 ### Autor: Julio Schneider Estop
-### Fecha: Mayo 2025
+
+### Fecha: Junio 2025
 
 ---
 
@@ -731,8 +735,8 @@ Este documento constituye la documentación técnica completa del proyecto "Sist
 
 **Autor**: Julio Schneider Estop  
 **Repositorio**: https://github.com/jesdeltoro/EV-Django-Project  
-**Fecha**: Mayo 2024  
-**Tecnología Principal**: Django 5.2.1 + Python  
+**Fecha**: Junio 2025  
+**Tecnología Principal**: Django 5.2.1 + Python
 
 El proyecto demuestra competencias en:
 - Desarrollo web full-stack
