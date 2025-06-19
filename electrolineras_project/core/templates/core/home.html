@@ -45,6 +45,38 @@
 <!-- Add QR Code JS library -->
 <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
 
+<!-- QR Code específico CSS -->
+<style>
+  #qrcode {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    margin: 0 auto;
+  }
+  
+  #qrcode img {
+    display: block;
+    margin: 0 auto;
+  }
+    #qrcode canvas {
+    display: block;
+    margin: 0 auto;
+  }
+  
+  .qr-card {
+    transition: all 0.3s ease;
+    transform: translateY(0);
+    opacity: 0.85;
+  }
+  
+  .qr-card:hover {
+    transform: translateY(-5px);
+    opacity: 1;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  }
+</style>
+
 <!-- Hero Section with FIND/CHARGE/GO -->
 <div class="hero-section" style="background-color: rgba(75, 0, 130, 0.7); color: white; text-align: center; padding: 100px 0; position: relative; overflow: hidden; width: 100%;">
   <div class="container">
@@ -56,12 +88,10 @@
         <div id="line4" class="hero-line" style="visibility: hidden;">GO<span class="slash" style="color: #4CD964;">/</span></div>
       </h1>      <p id="tagline" class="lead" style="font-size: 1.8rem; margin-top: 2rem; visibility: hidden;">
         Busca nuestras Electrolineras con la app EvEMaps.
-      </p>
-      <!-- Código QR para descargar la aplicación móvil -->
-      <div id="qr-container" style="margin-top: 30px; display: flex; justify-content: center;">
-        <div style="background-color: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+      </p>      <!-- Código QR para descargar la aplicación móvil -->      <div id="qr-container" style="margin-top: 30px; display: flex; justify-content: center;">
+        <div class="qr-card" style="background-color: rgba(209, 183, 240, 0.8); padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); transition: all 0.4s ease;">
           <div id="qrcode" style="width: 200px; height: 200px;"></div>
-          <p style="margin-top: 10px; color: #4B0082; font-weight: bold;">Escanea para descargar EvEmaps</p>
+          <p style="margin-top: 10px; color: #4B0082; font-weight: bold; text-align: center; transition: all 0.3s ease;">Escanea para descargar EvEmaps</p>
         </div>
       </div>
     </div>
@@ -146,11 +176,11 @@
       animateElement('line3', 'animate__fadeInLeft', 800);
       animateElement('line4', 'animate__fadeInRight', 1200);
       animateElement('tagline', 'animate__fadeInUp', 1600);
-      
-      // Generate QR code and animate
+        // Generate QR code without the fade animation
       setTimeout(function() {
         generateQRCode();
-        animateElement('qr-container', 'animate__fadeInUp', 100);
+        // Hacemos visible el contenedor sin agregar clase de animación
+        document.getElementById('qr-container').style.visibility = 'visible';
       }, 1800);
       
       // Animate blog cards
@@ -167,28 +197,40 @@
           element.classList.add('animate__animated', animationClass);
         }
       }, delay);
-    }
-      // Function to generate the QR code
+    }    // Function to generate the QR code
     function generateQRCode() {
       const qrcodeContainer = document.getElementById('qrcode');
       if (qrcodeContainer) {
         // Clear previous QR code if any
         qrcodeContainer.innerHTML = "";
         
-        try {        // Generate QR code with absolute URL for the production environment
-        let downloadUrl = "https://evemaps.pythonanywhere.com/download/evemaps-app/";
-        new QRCode(qrcodeContainer, {
-          text: downloadUrl,
-          width: 200,
-          height: 200,
-          colorDark: "#4B0082",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.H
-        });
+        try {
+          // Generate QR code with absolute URL for the production environment
+          let downloadUrl = "https://evemaps.pythonanywhere.com/download/evemaps-app/";
           
-          // Hacer visible el contenedor inmediatamente
-          document.getElementById('qr-container').style.visibility = 'visible';
-          console.log("QR Code generated successfully");
+          // Create QR code with improved styling
+          const qr = new QRCode(qrcodeContainer, {
+            text: downloadUrl,
+            width: 200,
+            height: 200,
+            colorDark: "#4B0082",      // Color morado oscuro para los puntos del QR
+            colorLight: "#f5f0ff",     // Color lavanda muy claro para el fondo
+            correctLevel: QRCode.CorrectLevel.H,
+            margin: 4                  // Margen reducido para que el QR use más espacio
+          });
+            // Mejora para centrar - aplicar estilo adicional después de generar
+          setTimeout(function() {
+            // Ajuste para centrar el QR en su contenedor
+            const qrImg = qrcodeContainer.querySelector('img');
+            if (qrImg) {
+              qrImg.style.margin = "0 auto";
+              qrImg.style.display = "block";
+            }
+            
+            // El contenedor del QR ya es visible pero con opacidad reducida
+            // dejando que el hover sea el que le da plena visibilidad
+            console.log("QR Code generated successfully");
+          }, 50);
         } catch (error) {
           console.error("Error generating QR code:", error);
         }
