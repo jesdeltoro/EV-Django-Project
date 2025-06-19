@@ -34,17 +34,20 @@ def download_apk(request):
     """
     Vista para descargar el archivo APK de la aplicación EvEmaps.
     No requiere autenticación para permitir a cualquier usuario descargar la app.
-    Optimizada para funcionar tanto en desarrollo local como en PythonAnywhere.
+    Adaptada para funcionar en la ruta específica de PythonAnywhere.
     """
-    file_path = os.path.join(settings.MEDIA_ROOT, 'downloads', 'app-release.apk')
+    # Determinar si estamos en producción (PythonAnywhere) o en desarrollo local
+    is_production = request.get_host() == 'evemaps.pythonanywhere.com'
+    
+    if is_production:
+        # Ruta específica para PythonAnywhere
+        file_path = '/home/evemaps/EV-Django-Project/electrolineras_project/media/downloads/app-release.apk'
+    else:
+        # Ruta para desarrollo local
+        file_path = os.path.join(settings.MEDIA_ROOT, 'downloads', 'app-release.apk')
     
     if os.path.exists(file_path):
         try:
-            # Abre el archivo en modo binario
-            with open(file_path, 'rb') as apk_file:
-                # Lee el contenido del archivo
-                file_content = apk_file.read()
-                
             # Crea la respuesta con el contenido del archivo
             response = FileResponse(open(file_path, 'rb'), content_type='application/vnd.android.package-archive')
             response['Content-Disposition'] = 'attachment; filename="EvEmaps.apk"'
@@ -59,4 +62,4 @@ def download_apk(request):
             print(f"Error al servir el archivo APK: {str(e)}")
             raise Http404("Error al acceder al archivo APK.")
     else:
-        raise Http404("El archivo APK no se encuentra disponible en este momento.")
+        raise Http404(f"El archivo APK no se encuentra disponible en este momento. Ruta buscada: {file_path}")
