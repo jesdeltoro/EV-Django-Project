@@ -51,7 +51,9 @@ INSTALLED_APPS = [
     'core',
     'messenger',
     'payments',  # Nueva aplicación de pagos
+    'chatbot',   # Nueva aplicación de chatbot
     'rest_framework',
+    'channels',  # Django Channels para WebSockets
     'pages.apps.PagesConfig',
     'tinymce',  # Add TinyMCE to installed apps
     'corsheaders',
@@ -87,6 +89,14 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'electrolineras_project.wsgi.application'
+ASGI_APPLICATION = 'electrolineras_project.asgi.application'
+
+# Configuración de Channels
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 
 # Database
@@ -135,6 +145,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+# Additional static files directories (commented out as directory doesn't exist)
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'staticfiles'),
+# ]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
