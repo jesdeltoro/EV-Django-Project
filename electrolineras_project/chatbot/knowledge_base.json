@@ -1,0 +1,83 @@
+{
+  "precios": {
+    "kwh_base": 0.30,
+    "moneda": "€",
+    "descuento_premium": 0.05,
+    "ultima_actualizacion": "2025-06-24"
+  },
+  "conectores": {
+    "tipos_disponibles": {
+      "Type 2": {
+        "nombre": "Type 2 (Mennekes)",
+        "potencia_max": "22kW AC",
+        "descripcion": "Conector estándar europeo para carga normal y semi-rápida",
+        "compatible_con": "Mayoría de vehículos eléctricos europeos"
+      },
+      "CCS": {
+        "nombre": "CCS Combo",
+        "potencia_max": "150kW DC",
+        "descripcion": "Conector de carga rápida DC más utilizado",
+        "compatible_con": "BMW, Mercedes, Volkswagen, Audi, etc."
+      },
+      "CHAdeMO": {
+        "nombre": "CHAdeMO",
+        "potencia_max": "50kW DC",
+        "descripcion": "Estándar japonés de carga rápida",
+        "compatible_con": "Nissan Leaf, Mitsubishi i-MiEV, etc."
+      },
+      "Schuko": {
+        "nombre": "Schuko (Enchufe doméstico)",
+        "potencia_max": "3.7kW AC",
+        "descripcion": "Enchufe estándar doméstico para carga lenta",
+        "compatible_con": "Cualquier vehículo con cable adaptador"
+      }
+    },
+    "potencias_disponibles": ["3.7kW", "7kW", "22kW", "50kW", "150kW"],
+    "tiempos_carga_aproximados": {
+      "3.7kW": "8-12 horas para carga completa",
+      "7kW": "4-6 horas para carga completa",
+      "22kW": "1-3 horas para carga completa",
+      "50kW": "30-60 minutos para 80%",
+      "150kW": "15-30 minutos para 80%"
+    }
+  },
+  "ubicaciones": [
+    {
+      "nombre": "Estación Centro",
+      "direccion": "Calle Principal 123",
+      "conectores": ["Type 2", "CCS", "CHAdeMO"],
+      "potencias": [7, 22, 50],
+      "disponible_24_7": true
+    },
+    {
+      "nombre": "Estación Norte",
+      "direccion": "Avenida Norte 456",
+      "conectores": ["Type 2", "CCS"],
+      "potencias": [22, 150],
+      "disponible_24_7": true
+    }
+  ],
+  "servicios": {
+    "registro_gratuito": true,
+    "app_movil": "EvEMaps",
+    "metodos_pago": ["Stripe", "Tarjeta", "Premium"],
+    "soporte_tecnico": "24/7"
+  },
+  "contacto": {
+    "creador": "Julio Schneider",
+    "email": "julio@juliomalaga.me",
+    "soporte": "chat interno"
+  },
+  "promociones": {
+    "plan_premium": {
+      "activo": true,
+      "beneficios": ["Descuentos en tarifas", "Acceso prioritario", "Funciones adicionales"],
+      "precio_mensual": 9.99
+    }
+  },
+  "horarios": {
+    "electrolineras": "24/7",
+    "soporte_chat": "24/7",
+    "soporte_email": "Lunes a Viernes 9-18h"
+  }
+}

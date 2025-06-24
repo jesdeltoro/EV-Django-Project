@@ -1,0 +1,231 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Chat - EV-EMAPs{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card" style="border-radius: 15px; border: 1px solid #9370DB;">
+                <div class="card-header bg-gradient" style="background-color: #4B0082; color: white; border-radius: 15px 15px 0 0;">
+                    <h5 class="mb-0">
+                        <i class="fas fa-robot mr-2"></i> Asistente Virtual EV-EMAPs
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Área de mensajes -->
+                    <div id="chat-messages" style="height: 400px; overflow-y: auto; padding: 10px; background-color: #f8f5ff; border-radius: 10px;">
+                        <div class="text-center text-muted pt-5 pb-5">
+                            <div class="spinner-grow text-purple" role="status">
+                                <span class="sr-only">Cargando...</span>
+                            </div>
+                            <p class="mt-2">Conectando al asistente...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Indicador de escritura -->
+                    <div id="typing-indicator" class="small text-muted ml-2 mb-2 d-none">
+                        <div class="typing-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Formulario de entrada -->
+                    <form id="chat-form" class="mt-3">
+                        <div class="input-group">
+                            <input type="text" id="chat-message-input" class="form-control" placeholder="Escribe tu mensaje aquí..." autocomplete="off">
+                            <div class="input-group-append">
+                                <button id="chat-message-submit" class="btn" type="submit" style="background-color: #9370DB; color: white;">
+                                    <i class="fas fa-paper-plane"></i> Enviar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-light small" style="border-radius: 0 0 15px 15px;">
+                    <div class="row">
+                        <div class="col text-muted">
+                            Este chatbot utiliza un sistema básico. Las respuestas son orientativas.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estilo del chat -->
+<style>
+    /* Estilo para los mensajes */
+    .message {
+        margin-bottom: 15px;
+        animation: fadeIn 0.3s;
+        max-width: 80%;
+    }
+    
+    .message-user {
+        margin-left: auto;
+        background-color: #9370DB;
+        color: white;
+        border-radius: 18px 18px 0 18px;
+        padding: 10px 15px;
+    }
+    
+    .message-assistant {
+        margin-right: auto;
+        background-color: #e9e3f5;
+        color: #333;
+        border-radius: 18px 18px 18px 0;
+        padding: 10px 15px;
+    }
+    
+    .message-system {
+        width: 100%;
+        text-align: center;
+        background-color: #f0f0f0;
+        border-radius: 10px;
+        padding: 5px;
+        color: #666;
+        font-style: italic;
+        margin: 10px 0;
+    }
+    
+    /* Animación de aparición */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Indicador de escritura */
+    .typing-dots {
+        display: inline-block;
+    }
+    
+    .typing-dots span {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: #9370DB;
+        border-radius: 50%;
+        margin-right: 3px;
+        animation: typingDot 1s infinite ease-in-out;
+    }
+    
+    .typing-dots span:nth-child(1) { animation-delay: 0s; }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+    
+    @keyframes typingDot {
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-5px); }
+    }
+</style>
+
+<!-- JavaScript para la comunicación con WebSocket -->
+<script>
+    // Obtener el nombre de la sala del contexto pasado a la plantilla
+    const roomName = {{ room_name }};
+    
+    // Crear la conexión WebSocket
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
+    );
+    
+    const messagesContainer = document.getElementById('chat-messages');
+    const messageInput = document.getElementById('chat-message-input');
+    const chatForm = document.getElementById('chat-form');
+    const typingIndicator = document.getElementById('typing-indicator');
+    
+    // Función para añadir un mensaje al contenedor
+    function addMessage(message, role) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message');
+        
+        if (role === 'user') {
+            messageDiv.classList.add('message-user');
+        } else if (role === 'assistant') {
+            messageDiv.classList.add('message-assistant');
+        } else if (role === 'system') {
+            messageDiv.classList.add('message-system');
+        }
+        
+        // Sanitizar y renderizar el mensaje
+        messageDiv.textContent = message;
+        
+        // Añadir al contenedor y hacer scroll
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // Cuando el WebSocket se conecta
+    chatSocket.onopen = function(e) {
+        console.log('WebSocket conectado');
+        // Limpiar el contenedor de mensajes
+        messagesContainer.innerHTML = '';
+    };
+    
+    // Cuando el WebSocket recibe un mensaje
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        
+        // Diferentes tipos de mensajes
+        if (data.type === 'welcome') {
+            // Mensaje inicial de bienvenida
+            addMessage(data.message, 'assistant');
+        } else if (data.type === 'message') {
+            // Mensaje normal del chat
+            typingIndicator.classList.add('d-none');
+            addMessage(data.message, data.role);
+        } else if (data.type === 'status') {
+            // Mostrar indicador de escritura
+            typingIndicator.classList.remove('d-none');
+        } else if (data.type === 'error') {
+            // Mostrar error como mensaje del sistema
+            typingIndicator.classList.add('d-none');
+            addMessage('Error: ' + data.message, 'system');
+        }
+    };
+      // Si el WebSocket se cierra
+    chatSocket.onclose = function(e) {
+        console.error('Error de conexión WebSocket', e);
+        addMessage('Se perdió la conexión con el chatbot. Por favor, recarga la página.', 'system');
+    };
+    
+    // Si hay un error en el WebSocket
+    chatSocket.onerror = function(e) {
+        console.error('WebSocket Error:', e);
+        addMessage('Error de conexión. Verificando disponibilidad del servicio...', 'system');
+    };
+    
+    // Enviar mensaje cuando se envía el formulario
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const message = messageInput.value.trim();
+        if (message) {
+            // Añadir el mensaje del usuario a la interfaz
+            addMessage(message, 'user');
+            
+            // Enviar el mensaje al WebSocket
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }));
+            
+            // Limpiar el input
+            messageInput.value = '';
+            messageInput.focus();
+            
+            // Mostrar indicador de escritura
+            typingIndicator.classList.remove('d-none');
+        }
+    });
+    
+    // Focus en el input al cargar
+    document.addEventListener('DOMContentLoaded', function() {
+        messageInput.focus();
+    });
+</script>
+{% endblock %}
