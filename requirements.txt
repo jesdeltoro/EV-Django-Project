@@ -1,7 +1,8 @@
-asgiref==3.8.1
+asgiref==3.12.1
 astroid==3.3.9
 certifi==2025.4.26
 charset-normalizer==3.4.2
+channels==4.3.2
 colorama==0.4.6
 dill==0.4.0
 Django==5.2

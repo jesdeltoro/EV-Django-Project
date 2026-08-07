@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-%nyt9ci_gm3$*o^qe+53i*56vf2c8s!ypnq7$f+g$=^ejx@%lr'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False').lower() in ('1', 'true', 'yes')
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -46,12 +46,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sitemaps',
     'electrolineras',
     'profiles',
     'core',
     'messenger',
     'payments',  # Nueva aplicación de pagos
-    'chatbot',   # Nueva aplicación de chatbot
+    'chatbot',   # Chatbot y soporte en tiempo real
     'rest_framework',
     'channels',  # Django Channels para WebSockets
     'pages.apps.PagesConfig',
@@ -60,6 +61,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'core.middleware.SeoHeadersMiddleware',
     'core.middleware.BlockDirectLoginAccessMiddleware',  # Añade aquí tu middleware personalizado
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -83,6 +85,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'core.context_processors.seo_defaults',
             ],
         },
     },
@@ -145,12 +148,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR,'static')
 
-# Additional static files directories (commented out as directory doesn't exist)
-# STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, 'staticfiles'),
-# ]
+# URL pública canónica utilizada por metadatos, robots.txt y datos estructurados.
+SITE_URL = os.environ.get('SITE_URL', 'https://evemaps.pythonanywhere.com').rstrip('/')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -240,3 +241,7 @@ PAYMENT_CANCEL_URL = 'http://localhost:8000/payments/cancel/'    # URL de cancel
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = os.environ.get(
+    'SECURE_SSL_REDIRECT',
+    'True' if not DEBUG else 'False',
+).lower() in ('1', 'true', 'yes')
