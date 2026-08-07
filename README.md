@@ -9,7 +9,7 @@
 **Fecha:** Junio 2025
 
 - **Web pública:** [https://evemaps.pythonanywhere.com](https://evemaps.pythonanywhere.com)
-- **APK disponible:** EvEMaps **1.0.3** (`versionCode 4`)
+- **APK disponible:** EvEMaps **1.0.4** (`versionCode 5`, mapa OpenStreetMap)
 - **Descarga:** [APK oficial firmada](https://evemaps.pythonanywhere.com/download/evemaps-app/)
 
 ---
@@ -494,12 +494,13 @@ La web distribuye la APK oficial de EvEMaps desde:
 
 | Dato | Valor |
 |------|-------|
-| Versión | 1.0.3 |
-| Código de versión | 4 |
-| Tamaño | 20.534.167 bytes |
-| SHA-256 | `BA964EDFC8A868883CBC87BDA433C254982B1F1770ADF7D736B99D67FF98D93A` |
+| Versión | 1.0.4 |
+| Código de versión | 5 |
+| Mapa | OpenStreetMap |
+| Tamaño | 20.895.087 bytes |
+| SHA-256 | `6A2FA344C6BBF658FCAA3BE9C52611E765943416BA66FB60BB3999D73C7C3674` |
 
-La compilación está firmada con el mismo certificado que la versión 1.0.2, por lo que Android puede instalarla como actualización.
+La compilación está firmada con el mismo certificado que las versiones oficiales anteriores, por lo que Android puede instalarla como actualización. Una compilación de desarrollo con otra firma debe desinstalarse previamente.
 
 ---
 
