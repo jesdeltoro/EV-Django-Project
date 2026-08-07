@@ -1,7 +1,10 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block title %}Blog{% endblock %}
+{% block title %}Blog sobre coches eléctricos y movilidad{% endblock %}
+{% block meta_description %}Noticias y artículos de EvEMaps sobre coches eléctricos, electrolineras, puntos de recarga y movilidad eléctrica.{% endblock %}
+{% block og_title %}Blog de coches eléctricos y movilidad | EvEMaps{% endblock %}
+{% block og_description %}Noticias, consejos y novedades sobre vehículos eléctricos y puntos de recarga.{% endblock %}
 
 {% block content %}
 <style>
@@ -65,7 +68,9 @@
 <div class="container">
   <div class="row mt-3">
     <div class="col-md-10 mx-auto">
-      <h1 class="text-center mb-4">Blog</h1>      {% if user.is_staff %}
+      <h1 class="text-center mb-2">Blog sobre coches eléctricos y movilidad</h1>
+      <p class="lead text-center text-white mb-4">Noticias, consejos y novedades sobre electrolineras, recarga y vehículos eléctricos.</p>
+      {% if user.is_staff %}
       <div class="mb-4 text-center">
         <a class="btn" href="{% url 'pages_app:create' %}">Crear página</a>
       </div>

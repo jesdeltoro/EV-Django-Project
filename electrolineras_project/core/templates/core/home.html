@@ -1,7 +1,34 @@
 {% extends 'core/base.html' %}
 {% load static %}
 {% load pages_extras %}
-{% block title %}Inicio{% endblock %}
+{% block title %}Mapa de electrolineras y puntos de recarga{% endblock %}
+{% block meta_description %}Encuentra electrolineras y puntos de recarga para coches eléctricos con EvEMaps. Consulta ubicación, conectores, potencia y disponibilidad en el mapa.{% endblock %}
+{% block og_title %}Mapa de electrolineras y puntos de recarga | EvEMaps{% endblock %}
+{% block og_description %}Localiza estaciones de carga para coches eléctricos y consulta conectores, potencia y disponibilidad.{% endblock %}
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "{{ SEO_SITE_URL }}/#website",
+      "url": "{{ SEO_SITE_URL }}/",
+      "name": "EvEMaps",
+      "description": "Mapa de electrolineras y puntos de recarga para coches eléctricos"
+    },
+    {
+      "@type": "Organization",
+      "@id": "{{ SEO_SITE_URL }}/#organization",
+      "name": "EvEMaps",
+      "url": "{{ SEO_SITE_URL }}/",
+      "logo": "{{ SEO_SITE_URL }}{% static 'core/img/EvEMaps.png' %}",
+      "email": "julio@juliomalaga.online"
+    }
+  ]
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <!-- Estilos para fondo de página completa -->
@@ -77,18 +104,28 @@
   }
 </style>
 
-<!-- Hero Section with FIND/CHARGE/GO -->
+<!-- Presentación principal -->
 <div class="hero-section" style="background-color: rgba(75, 0, 130, 0.7); color: white; text-align: center; padding: 100px 0; position: relative; overflow: hidden; width: 100%;">
   <div class="container">
     <div class="hero-text">
-      <h1 style="font-size: 4.5rem; font-weight: 700; line-height: 1.2; margin-bottom: 1rem;">
+      <div aria-hidden="true" style="font-size: clamp(2.5rem, 7vw, 4.5rem); font-weight: 700; line-height: 1.05; margin-bottom: 1.5rem;">
         <div id="line1" class="hero-line" style="visibility: hidden;">CHAT<span class="slash" style="color: #4CD964;">/</span></div>
         <div id="line2" class="hero-line" style="visibility: hidden;">FIND<span class="slash" style="color: #4CD964;">/</span></div>
         <div id="line3" class="hero-line" style="visibility: hidden;">CHARGE<span class="slash" style="color: #4CD964;">/</span></div>
         <div id="line4" class="hero-line" style="visibility: hidden;">GO<span class="slash" style="color: #4CD964;">/</span></div>
-      </h1>      <p id="tagline" class="lead" style="font-size: 1.8rem; margin-top: 2rem; visibility: hidden;">
-        Busca nuestras Electrolineras con la app EvEMaps.
-      </p>      <!-- Código QR para descargar la aplicación móvil -->      <div id="qr-container" style="margin-top: 30px; display: flex; justify-content: center;">
+      </div>
+      <h1 style="font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; line-height: 1.2; margin: 1.5rem auto 1rem; max-width: 900px;">
+        Encuentra electrolineras y puntos de recarga para tu coche eléctrico
+      </h1>
+      <p id="tagline" class="lead" style="font-size: 1.35rem; margin: 1rem auto; max-width: 800px; visibility: hidden;">
+        Consulta en el mapa la ubicación, el tipo de conector, la potencia y el estado de cada estación de carga.
+      </p>
+      <div class="mt-4">
+        <a href="{% url 'mapa_puntos_recarga' %}" class="btn btn-lg mr-2" style="background-color: #4CD964; color: #241b2f; font-weight: 700;">Ver mapa de electrolineras</a>
+        <a href="{% url 'download_apk' %}" class="btn btn-outline-light btn-lg">Descargar EvEMaps</a>
+      </div>
+      <!-- Código QR para descargar la aplicación móvil -->
+      <div id="qr-container" style="margin-top: 30px; display: flex; justify-content: center;">
         <div class="qr-card" style="background-color: rgba(209, 183, 240, 0.8); padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); transition: all 0.4s ease;">
           <div id="qrcode" style="width: 200px; height: 200px;"></div>
           <p style="margin-top: 10px; color: #4B0082; font-weight: bold; text-align: center; transition: all 0.3s ease;">Escanea para descargar EvEmaps</p>
@@ -97,6 +134,33 @@
     </div>
   </div>
 </div>
+
+<section style="background: rgba(255, 255, 255, 0.96); color: #2d2436; padding: 55px 0;">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 text-center">
+        <h2 style="color: #4B0082; font-weight: 700;">Tu mapa de carga para vehículos eléctricos</h2>
+        <p class="lead mt-3">
+          EvEMaps está pensada para conductores que necesitan localizar puntos de recarga y electrolineras de forma sencilla. El mapa reúne información útil para elegir dónde cargar un coche eléctrico antes de iniciar el trayecto.
+        </p>
+      </div>
+    </div>
+    <div class="row mt-4">
+      <article class="col-md-4 mb-4">
+        <h3 style="color: #4B0082; font-size: 1.3rem;">Localiza estaciones de carga</h3>
+        <p>Explora el mapa interactivo y consulta la dirección de los puntos de recarga disponibles en EvEMaps.</p>
+      </article>
+      <article class="col-md-4 mb-4">
+        <h3 style="color: #4B0082; font-size: 1.3rem;">Compara conectores y potencia</h3>
+        <p>Revisa el tipo de conector y la potencia en kW para encontrar una estación compatible con tu vehículo eléctrico.</p>
+      </article>
+      <article class="col-md-4 mb-4">
+        <h3 style="color: #4B0082; font-size: 1.3rem;">Consulta disponibilidad</h3>
+        <p>Comprueba si un punto está disponible, reservado, en uso o fuera de servicio antes de desplazarte.</p>
+      </article>
+    </div>
+  </div>
+</section>
 
 <!-- Blog Entries Section - modificado para ocupar todo el ancho -->
 <div style="background-color: rgba(75, 0, 130, 0.7); color: white; padding: 50px 0; width: 100%;">
@@ -346,7 +410,8 @@
         if (qrcodeContainer) {          new QRCode(qrcodeContainer, {
             text: "https://evemaps.pythonanywhere.com/download/evemaps-app/",
             width: 200,
-            height: 200,            colorDark: "#4B0082",
+            height: 200,
+            colorDark: "#4B0082",
             colorLight: "#ffffff"
           });
           console.log("QR code generated by backup script");
@@ -357,53 +422,4 @@
     }, 1000);
   });
 </script>
-
-<!-- Botón de chat flotante -->
-<style>
-  .chat-float-btn {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    background-color: #9370DB;
-    color: white;
-    border-radius: 50%;
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    z-index: 1000;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    animation: pulse 2s infinite;
-  }
-  
-  .chat-float-btn:hover {
-    transform: scale(1.1);
-    background-color: #4B0082;
-    animation: none;
-  }
-  
-  @keyframes pulse {
-    0% {
-      box-shadow: 0 0 0 0 rgba(147, 112, 219, 0.7);
-    }
-    70% {
-      box-shadow: 0 0 0 10px rgba(147, 112, 219, 0);
-    }
-    100% {
-      box-shadow: 0 0 0 0 rgba(147, 112, 219, 0);
-    }
-  }
-  
-  .chat-icon {
-    font-size: 24px;
-  }
-</style>
-
-<a href="{% url 'chatbot:chat' %}" class="chat-float-btn" title="Chatea con nuestro asistente virtual">
-  <i class="fas fa-comments chat-icon"></i>
-</a>
-
 {% endblock %}

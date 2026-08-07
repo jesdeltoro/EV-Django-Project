@@ -1,9 +1,13 @@
 {% extends "core/base.html" %}
-{% block title %}Detalle Estación{% endblock %}
+{% block title %}{{ punto_recarga.nombre }}: punto de recarga{% endblock %}
+{% block meta_description %}Consulta {{ punto_recarga.nombre }}, punto de recarga para coches eléctricos en {{ punto_recarga.direccion }}. Información de potencia y conector en EvEMaps.{% endblock %}
+{% block og_title %}{{ punto_recarga.nombre }} | Punto de recarga EvEMaps{% endblock %}
+{% block og_description %}Estación de carga en {{ punto_recarga.direccion }}. Consulta conector y potencia en EvEMaps.{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-  <h2>{{ punto_recarga.nombre }}</h2>
+  <h1>{{ punto_recarga.nombre }}</h1>
+  <p class="lead">Punto de recarga para coches eléctricos</p>
   <ul class="list-group">
     <li class="list-group-item"><strong>Dirección:</strong> {{ punto_recarga.direccion }}</li>
     <li class="list-group-item"><strong>Latitud:</strong> {{ punto_recarga.latitud }}</li>
@@ -11,6 +15,6 @@
     <li class="list-group-item"><strong>Potencia:</strong> {{ punto_recarga.potencia_kw }} kW</li>
     <li class="list-group-item"><strong>Tipo de conector:</strong> {{ punto_recarga.tipo_conector.denominacion }}</li>
   </ul>
-  <a href="{% url 'mapa_puntos' %}" class="btn btn-secondary mt-3">Volver al mapa</a>
+  <a href="{% url 'mapa_puntos_recarga' %}" class="btn btn-secondary mt-3">Volver al mapa de electrolineras</a>
 </div>
 {% endblock %}

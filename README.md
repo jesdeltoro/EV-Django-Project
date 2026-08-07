@@ -8,6 +8,10 @@
 **Trabajo fin de grado – Formación Profesional**  
 **Fecha:** Junio 2025
 
+- **Web pública:** [https://evemaps.pythonanywhere.com](https://evemaps.pythonanywhere.com)
+- **APK disponible:** EvEMaps **1.0.3** (`versionCode 4`)
+- **Descarga:** [APK oficial firmada](https://evemaps.pythonanywhere.com/download/evemaps-app/)
+
 ---
 
 ## 1. INTRODUCCIÓN Y OBJETIVOS
@@ -467,6 +471,36 @@ python manage.py actualizar_baterias --intervalo 30
 - **Validación y seguridad** en el manejo de datos financieros
 - **Notificaciones automáticas** de pago exitoso o fallido
 
+### 4.12 SEO e indexación
+
+- **Títulos y descripciones** específicos para electrolineras, puntos de recarga y coches eléctricos.
+- **URLs canónicas**, Open Graph y datos estructurados de Schema.org.
+- **Sitemap XML dinámico** para páginas, mapa y fichas de puntos de recarga.
+- **robots.txt** y cabeceras `noindex` para zonas privadas, técnicas y transaccionales.
+- **Google Search Console** verificado con 11 URLs públicas descubiertas.
+- **Redirección permanente a HTTPS** para evitar contenido duplicado.
+
+### 4.13 Privacidad y contacto
+
+- **Gestor de consentimiento de cookies** con preferencias persistentes.
+- Carga diferida de recursos opcionales hasta obtener consentimiento.
+- Contacto público mediante `julio@juliomalaga.online` y Briar.
+
+### 4.14 Aplicación Android descargable
+
+La web distribuye la APK oficial de EvEMaps desde:
+
+`https://evemaps.pythonanywhere.com/download/evemaps-app/`
+
+| Dato | Valor |
+|------|-------|
+| Versión | 1.0.3 |
+| Código de versión | 4 |
+| Tamaño | 20.534.167 bytes |
+| SHA-256 | `BA964EDFC8A868883CBC87BDA433C254982B1F1770ADF7D736B99D67FF98D93A` |
+
+La compilación está firmada con el mismo certificado que la versión 1.0.2, por lo que Android puede instalarla como actualización.
+
 ---
 
 ## 5. ARQUITECTURA DE SOFTWARE
@@ -593,16 +627,20 @@ def test_login_user():
 ```python
 # settings.py - Configuraciones para producción
 DEBUG = False
-ALLOWED_HOSTS = ['mi-dominio.com', 'www.mi-dominio.com']
+ALLOWED_HOSTS = ['evemaps.pythonanywhere.com']
 SECURE_SSL_REDIRECT = True
-SECURE_HSTS_SECONDS = 31536000
 ```
+
+La aplicación se encuentra desplegada en PythonAnywhere y publica su mapa, blog, API REST, sitemap y descarga Android mediante HTTPS.
 
 ### 8.2 Optimizaciones Implementadas
 - **Archivos estáticos** servidos eficientemente
 - **Base de datos** optimizada con índices
 - **Cache** de consultas frecuentes
 - **Compresión** de recursos CSS/JavaScript
+- **Metadatos SEO y contenido semántico** accesibles para buscadores
+- **Sitemap dinámico** en [sitemap.xml](https://evemaps.pythonanywhere.com/sitemap.xml)
+- **Consentimiento de cookies** antes de cargar recursos opcionales
 
 ### 8.3 Monitorización
 - **Logs detallados** de errores y accesos

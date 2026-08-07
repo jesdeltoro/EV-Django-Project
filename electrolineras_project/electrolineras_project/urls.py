@@ -18,9 +18,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from django.conf import settings
+from django.contrib.sitemaps.views import sitemap
 from messenger.urls import messenger_patterns
+from core.sitemaps import sitemaps
 
 urlpatterns = [
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('', include('core.urls')),
     path('admin/', admin.site.urls),
     path('pages/', include(('pages.urls', 'pages_app'), namespace='pages_app')),
