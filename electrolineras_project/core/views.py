@@ -6,6 +6,7 @@ from .serializers import RegisterSerializer
 import os
 from django.conf import settings
 from django.http import FileResponse, Http404
+from django.http import HttpResponse
 from django.views.decorators.http import require_GET
 
 class HomePageView(TemplateView):
@@ -28,6 +29,34 @@ class MapaPageView(TemplateView):
 class RegisterAPIView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
+
+
+@require_GET
+def robots_txt(request):
+    lines = [
+        "User-agent: *",
+        "Allow: /",
+        "Disallow: /admin/",
+        "Disallow: /accounts/",
+        "Disallow: /api/",
+        "Disallow: /chat/",
+        "Disallow: /messenger/",
+        "Disallow: /payments/",
+        "Disallow: /profiles/",
+        "Disallow: /download/",
+        "Disallow: /electrolineras/api/",
+        "Disallow: /electrolineras/iniciar-carga/",
+        f"Sitemap: {settings.SITE_URL}/sitemap.xml",
+    ]
+    return HttpResponse("\n".join(lines) + "\n", content_type="text/plain; charset=utf-8")
+
+
+@require_GET
+def google_site_verification(request):
+    return HttpResponse(
+        "google-site-verification: googleabf16e15cc4e6a49.html\n",
+        content_type="text/html; charset=utf-8",
+    )
 
 @require_GET
 def download_apk(request):

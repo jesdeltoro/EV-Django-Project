@@ -1,0 +1,107 @@
+<section id="cookie-banner" class="cookie-banner" aria-labelledby="cookie-banner-title" hidden>
+  <div class="cookie-banner__content">
+    <div class="cookie-banner__copy">
+      <span class="cookie-banner__icon" aria-hidden="true">🍪</span>
+      <div>
+        <h2 id="cookie-banner-title">Tu privacidad, tus decisiones</h2>
+        <p>
+          EvEMaps utiliza cookies necesarias para iniciar sesión, proteger formularios y mantener la web segura.
+          Con tu permiso también podemos usar cookies de preferencias, medición y marketing.
+        </p>
+      </div>
+    </div>
+    <div class="cookie-banner__actions" aria-label="Opciones de cookies">
+      <button type="button" class="cookie-button cookie-button--secondary" data-cookie-action="reject">Rechazar opcionales</button>
+      <button type="button" class="cookie-button cookie-button--ghost" data-cookie-settings>Configurar</button>
+      <button type="button" class="cookie-button cookie-button--primary" data-cookie-action="accept">Aceptar todas</button>
+    </div>
+  </div>
+</section>
+
+<div id="cookie-dialog" class="cookie-dialog" hidden>
+  <div class="cookie-dialog__backdrop" data-cookie-close aria-hidden="true"></div>
+  <section class="cookie-dialog__panel" role="dialog" aria-modal="true" aria-labelledby="cookie-dialog-title" aria-describedby="cookie-dialog-description" tabindex="-1">
+    <header class="cookie-dialog__header">
+      <div>
+        <span class="cookie-dialog__eyebrow">Centro de privacidad</span>
+        <h2 id="cookie-dialog-title">Preferencias de cookies</h2>
+      </div>
+      <button type="button" class="cookie-dialog__close" data-cookie-close aria-label="Cerrar preferencias">&times;</button>
+    </header>
+
+    <p id="cookie-dialog-description" class="cookie-dialog__intro">
+      Puedes aceptar o rechazar cada categoría. Las cookies necesarias siempre están activas porque la web no puede funcionar correctamente sin ellas.
+    </p>
+
+    <div class="cookie-category">
+      <div class="cookie-category__heading">
+        <div>
+          <h3>Necesarias</h3>
+          <span class="cookie-category__status">Siempre activas</span>
+        </div>
+        <label class="cookie-switch cookie-switch--locked" aria-label="Cookies necesarias siempre activas">
+          <input type="checkbox" checked disabled>
+          <span aria-hidden="true"></span>
+        </label>
+      </div>
+      <p>Permiten iniciar sesión, proteger formularios, procesar funciones solicitadas y recordar tu elección de privacidad.</p>
+      <details>
+        <summary>Ver cookies y servicios</summary>
+        <ul>
+          <li><strong>sessionid</strong>: mantiene la sesión de Django.</li>
+          <li><strong>csrftoken</strong>: protege los formularios frente a solicitudes fraudulentas.</li>
+          <li><strong>evemaps_cookie_consent</strong>: conserva estas preferencias durante 6 meses.</li>
+          <li>Stripe puede utilizar almacenamiento técnico cuando decides iniciar un pago.</li>
+        </ul>
+      </details>
+    </div>
+
+    <div class="cookie-category">
+      <div class="cookie-category__heading">
+        <div>
+          <h3>Preferencias</h3>
+          <span class="cookie-category__status">Opcionales</span>
+        </div>
+        <label class="cookie-switch" aria-label="Permitir cookies de preferencias">
+          <input id="cookie-preferences" type="checkbox" data-cookie-category-input="preferences">
+          <span aria-hidden="true"></span>
+        </label>
+      </div>
+      <p>Permiten recordar opciones visuales y cargar recursos de personalización, como las fuentes externas.</p>
+    </div>
+
+    <div class="cookie-category">
+      <div class="cookie-category__heading">
+        <div>
+          <h3>Medición</h3>
+          <span class="cookie-category__status">Opcionales · no utilizadas actualmente</span>
+        </div>
+        <label class="cookie-switch" aria-label="Permitir cookies de medición">
+          <input id="cookie-analytics" type="checkbox" data-cookie-category-input="analytics">
+          <span aria-hidden="true"></span>
+        </label>
+      </div>
+      <p>Servirían para conocer de forma agregada cómo se utiliza EvEMaps y mejorar sus páginas.</p>
+    </div>
+
+    <div class="cookie-category">
+      <div class="cookie-category__heading">
+        <div>
+          <h3>Marketing</h3>
+          <span class="cookie-category__status">Opcionales · no utilizadas actualmente</span>
+        </div>
+        <label class="cookie-switch" aria-label="Permitir cookies de marketing">
+          <input id="cookie-marketing" type="checkbox" data-cookie-category-input="marketing">
+          <span aria-hidden="true"></span>
+        </label>
+      </div>
+      <p>Servirían para personalizar campañas o medir anuncios. EvEMaps no las utiliza actualmente.</p>
+    </div>
+
+    <footer class="cookie-dialog__actions">
+      <button type="button" class="cookie-button cookie-button--secondary" data-cookie-action="reject">Rechazar opcionales</button>
+      <button type="button" class="cookie-button cookie-button--ghost" data-cookie-action="save">Guardar selección</button>
+      <button type="button" class="cookie-button cookie-button--primary" data-cookie-action="accept">Aceptar todas</button>
+    </footer>
+  </section>
+</div>

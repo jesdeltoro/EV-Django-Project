@@ -1,747 +1,480 @@
-# DOCUMENTACIÓN TÉCNICA
+# TECHNICAL DOCUMENTATION
 
-## EvEMaps: Sistema de Localización de Puntos de Recarga para Vehículos Eléctricos
+## EvEMaps: Electric Vehicle Charging Station Management System
 
-**Autor:** Julio Schneider Estop  
-**CFGS Desarrollo de Aplicaciones Multiplataforma**  
-**Instituto de Educación Secundaria Portada Alta**  
-**Trabajo fin de grado – Formación Profesional**  
-**Fecha:** Junio 2025
+**Author:** Julio Schneider Estop
+**Higher Vocational Training in Multiplatform Application Development**
+**Portada Alta Secondary School**
+**Final vocational training project — June 2025**
 
----
-
-## 1. INTRODUCCIÓN Y OBJETIVOS
-
-### 1.1 Descripción del Proyecto
-El proyecto "Sistema de Gestión de Electrolineras" es una aplicación web desarrollada en Django que permite gestionar puntos de recarga para vehículos eléctricos. La aplicación facilita a los usuarios localizar, reservar y utilizar puntos de carga mediante una interfaz web intuitiva y un API REST para integraciones móviles.
-
-### 1.2 Objetivos Principales
-- **Localización de puntos de carga**: Mapa interactivo con ubicaciones de electrolineras
-- **Sistema de reservas**: Permitir a usuarios reservar puntos de carga
-- **Gestión de sesiones**: Control de cargas activas con simulación en tiempo real
-- **Administración**: Panel de control para gestionar puntos y usuarios
-- **API REST**: Servicios web para integración con aplicaciones móviles
-
-### 1.3 Justificación
-Con el crecimiento del parque de vehículos eléctricos, existe una necesidad real de sistemas que faciliten la gestión y uso de infraestructuras de carga. Este proyecto simula un sistema profesional que podría implementarse en el mundo real.
+- Public website: https://evemaps.pythonanywhere.com
+- APK: EvEMaps 1.0.4, version code 5, using OpenStreetMap
+- Download: https://evemaps.pythonanywhere.com/download/evemaps-app/
 
 ---
 
-## 2. ANÁLISIS TÉCNICO
+## 1. INTRODUCTION AND OBJECTIVES
 
-### 2.1 Tecnologías Utilizadas
+EvEMaps is a Django web application for managing electric-vehicle charging stations. Users can locate, reserve and use charging points through a responsive web interface. The project also exposes a REST API for mobile integrations.
 
-#### Backend
-- **Django 5.2.1**: Framework web principal
-- **Python 3.x**: Lenguaje de programación
-- **SQLite**: Base de datos (desarrollo)
-- **Django REST Framework**: API REST
-- **JWT**: Autenticación de tokens
+Main objectives:
 
-#### Frontend
-- **HTML5**: Estructura de páginas
-- **CSS3**: Estilos y diseño responsivo
-- **JavaScript**: Interactividad del cliente
-- **TinyMCE**: Editor de contenido enriquecido
+- Locate charging points on an interactive map.
+- Reserve available charging points.
+- Manage active charging sessions with real-time simulation.
+- Provide administration tools for stations and users.
+- Expose REST services for mobile applications.
 
-#### Herramientas y Librerías
-- **django-registration**: Gestión de usuarios
-- **Pillow**: Procesamiento de imágenes
-- **PowerShell**: Scripts de automatización
+The project models a professional system that could be extended for real-world deployment.
 
-### 2.2 Arquitectura del Sistema
+---
 
-```
+## 2. TECHNICAL ANALYSIS
+
+### Technologies
+
+Backend:
+
+- Django 5.2.1
+- Python 3.x
+- SQLite for development
+- Django REST Framework
+- JWT authentication
+
+Frontend:
+
+- HTML5
+- CSS3 and responsive design
+- JavaScript
+- TinyMCE rich-text editor
+
+Libraries and tools:
+
+- django-registration for user management
+- Pillow for image processing
+- PowerShell automation scripts
+- Stripe PaymentIntents for payment integration
+- Django Channels and WebSockets for real-time features
+
+### Project structure
+
+~~~text
 EV-Django-Project/
-├── .gitignore                         # Configuración de archivos a ignorar en Git
-├── preparar_distribucion.py           # Script para generar versión de distribución limpia
-├── README.md                          # Documentación principal del proyecto
-├── requirements.txt                   # Lista de dependencias del proyecto
-├── electrolineras_project/            # Carpeta principal del proyecto Django
-│   ├── manage.py                      # Comando principal para administrar Django
-│   ├── db.sqlite3                     # Base de datos SQLite utilizada en desarrollo
-│   ├── core/                          # Aplicación principal (core) del proyecto
-│   ├── electrolineras/                # App para la gestión de electrolineras
-│   ├── pages/                         # App para la gestión de páginas estáticas o dinámicas
-│   ├── messenger/                     # App para funcionalidades de mensajería
-│   ├── payments/                      # App para gestión de pagos y transacciones
-│   ├── profiles/                      # App para gestión de perfiles de usuario
-│   ├── registration/                  # App para gestión de registro y autenticación
-│   └── electrolineras_project/        # Configuración principal de la instancia Django
-│       ├── __init__.py                # Inicialización del paquete de configuración
-│       ├── settings.py                # Configuración global del proyecto Django
-│       ├── urls.py                    # Definición de rutas/URLs del proyecto
-│       └── wsgi.py                    # Punto de entrada para servidores WSGI
-├── Recursos/                          # Carpeta para recursos adicionales (documentación, etc.)
-└── test/                              # Carpeta con scripts de prueba (no incluida en distribución)
-```
+├── .gitignore
+├── README.md
+├── requirements.txt
+├── electrolineras_project/
+│   ├── manage.py
+│   ├── core/
+│   ├── electrolineras/
+│   ├── pages/
+│   ├── messenger/
+│   ├── payments/
+│   ├── profiles/
+│   ├── registration/
+│   └── electrolineras_project/
+│       ├── settings.py
+│       ├── urls.py
+│       └── wsgi.py
+├── Recursos/
+└── test/
+~~~
 
+Generated files, virtual environments, databases, logs, uploaded media and editor files must remain excluded from version control.
 
-### 2.3 Distribución y Versionado del Proyecto
+### Applications
 
-Para mantener un código limpio y facilitar la distribución del proyecto, se han implementado las siguientes soluciones:
+#### Pages
 
-#### 📦 Archivo .gitignore
-Se ha configurado un archivo `.gitignore` completo que excluye:
-- Archivos compilados (\_\_pycache\_\_, *.pyc, etc.)
-- Entornos virtuales (.venv, venv)
-- Archivos de base de datos y logs
-- Configuraciones de editores
-- Directorios temporales
+The Pages application manages blog posts and site content. It provides TinyMCE editing, staff-only permissions, CRUD operations, pagination, custom ordering and automatic timestamps.
 
-#### 📁 Estructura Recomendada
-La estructura actual del proyecto sigue las mejores prácticas de Django, con un directorio anidado `electrolineras_project` que contiene la configuración principal. Para distribuir el proyecto:
+Main URLs:
 
-1. Revisar que solo se incluyan los archivos necesarios
-2. Versionar solo el código fuente y recursos necesarios, excluyendo archivos temporales o generados
+- /pages/
+- /pages/create/
+- /pages/<id>/<slug>/
+- /pages/update/<id>/
 
-### 2.4 Aplicaciones del Sistema
+#### Messenger
 
-#### 📝 Aplicación Pages (Gestión de Blog)
-**Propósito**: Sistema de gestión de contenido para noticias y blog del sitio web.
+The Messenger application provides private communication between registered users. It includes private threads, AJAX message delivery, permission validation, automatic thread creation, activity timestamps and a responsive chat interface.
 
-**Funcionalidades principales:**
-- **Editor TinyMCE integrado** para contenido enriquecido con formato HTML
-- **Sistema de permisos restringido** a usuarios staff para crear/editar contenido
-- **CRUD completo** (Crear, Leer, Actualizar, Eliminar) para páginas de blog
-- **Visualización paginada** en la página principal con últimas noticias
-- **Orden personalizable** de entradas mediante campo de orden
-- **Timestamps automáticos** de creación y última edición
-- **Integración visual** con tema violeta del sitio web
+Main URLs:
 
-**Modelo Page:**
-```python
-class Page(models.Model):
-    title = models.CharField(max_length=200)
-    content = HTMLField()  # Campo TinyMCE para contenido enriquecido
-    order = models.SmallIntegerField(default=0)
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
-```
+- /messenger/
+- /messenger/thread/<id>/
+- /messenger/thread/<id>/add/
+- /messenger/thread/start/<username>/
 
-**URLs principales:**
-- `/pages/` - Lista de todas las páginas del blog
-- `/pages/create/` - Crear nueva página (solo staff)
-- `/pages/<id>/<slug>/` - Ver página específica
-- `/pages/update/<id>/` - Editar página (solo staff)
+#### Registration and Profiles
 
-#### 💬 Aplicación Messenger (Sistema de Mensajería)
-**Propósito**: Sistema de mensajería privada entre usuarios registrados del sistema.
+This application manages registration, authentication and user profiles. It supports unique email addresses, avatars, biographies, website links, aliases, custom forms, password validation and automatic profile creation through Django signals.
 
-**Funcionalidades principales:**
-- **Hilos de conversación privados** entre pares de usuarios
-- **Mensajes en tiempo real** mediante AJAX sin recargar la página
-- **Interfaz de chat moderna** con burbujas diferenciadas por usuario
-- **Validación de permisos** que previene acceso no autorizado a conversaciones
-- **ThreadManager personalizado** para encontrar o crear hilos automáticamente
-- **Actualización automática** de timestamps de última actividad
-- **Navegación fluida** entre diferentes conversaciones activas
-- **Scroll automático** a mensajes más recientes
+Main URLs:
 
-**Modelos principales:**
-```python
-class Message(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    content = models.TextField()
-    created = models.DateTimeField(auto_now_add=True)
+- /accounts/signup/
+- /accounts/profile/
+- /accounts/profile/email/
+- /accounts/login/
+- /accounts/password_change/
 
-class Thread(models.Model):
-    users = models.ManyToManyField(User, related_name='threads')
-    messages = models.ManyToManyField(Message)
-    updated = models.DateTimeField(auto_now=True)
-    objects = ThreadManager()
-```
+#### Payments
 
-**Características técnicas avanzadas:**
-- **Signal handlers** para validar que solo usuarios del hilo pueden enviar mensajes
-- **AJAX endpoints** para envío asíncrono de mensajes
-- **JavaScript dinámico** para actualización de interfaz en tiempo real
-- **Gestión de estados** para el botón de envío
+The Payments application manages invoices and charging-session payments through Stripe.
 
-**URLs principales:**
-- `/messenger/` - Lista de conversaciones del usuario
-- `/messenger/thread/<id>/` - Conversación específica
-- `/messenger/thread/<id>/add/` - Enviar mensaje (AJAX)
-- `/messenger/thread/start/<username>/` - Iniciar nueva conversación
+Features include:
 
-#### 🔐 Aplicación Registration (Registro y Perfiles)
-**Propósito**: Sistema completo de autenticación, registro de usuarios y gestión de perfiles.
+- Automatic invoice creation after charging sessions.
+- Dynamic energy rates.
+- Stripe PaymentIntent creation and confirmation.
+- Per-user invoice history.
+- Administration and financial review.
+- REST endpoints for rates, invoices, payments and statistics.
+- Ownership and duplicate-payment validation.
+- HTTPS, CSRF and environment-based secret configuration.
 
-**Funcionalidades principales:**
-- **Registro personalizado** con email obligatorio y validación de unicidad
-- **Gestión completa de perfiles** con avatar, biografía, enlace web y alias
-- **Formularios Django personalizados** con validación avanzada y styling
-- **Actualización separada de email** con verificación anti-duplicados
-- **Creación automática de perfil** mediante Django signals
-- **Validación robusta** de contraseñas y datos de entrada
-- **Integración visual** con el tema del sitio web
-- **Gestión de archivos** para avatares con reemplazo automático
+Main endpoints:
 
-**Modelo Profile:**
-```python
-class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    avatar = models.ImageField(upload_to=custom_upload_to, null=True, blank=True)
-    bio = models.TextField(null=True, blank=True)
-    link = models.URLField(max_length=200, null=True, blank=True)
-    alias = models.CharField(max_length=100, null=True, blank=True, unique=True)
-```
+- /payments/api/tarifa/
+- /payments/api/mis-facturas/
+- /payments/api/crear-payment-intent/
+- /payments/api/confirmar-pago/
+- /payments/api/estadisticas/
+- /payments/pagar/<invoice_id>/
 
-**Formularios especializados:**
-- **UserCreationFormWithEmail**: Extiende el formulario base añadiendo email obligatorio
-- **ProfileForm**: Gestión completa del perfil del usuario
-- **EmailForm**: Actualización específica y validada del email
+Payment flow:
 
-**Características técnicas:**
-- **Django signals** para creación automática de perfil al registrar usuario
-- **Validación personalizada** en formularios para prevenir duplicados
-- **Upload personalizado** de avatares con eliminación del anterior
-- **Decoradores de seguridad** para proteger vistas sensibles
+1. A user finishes a charging session.
+2. The system creates an invoice from energy consumption and the active rate.
+3. The user selects Pay from the invoice history.
+4. The backend creates a Stripe PaymentIntent.
+5. Stripe processes and confirms the payment.
+6. The application validates the result and marks the invoice as paid.
 
-**URLs principales:**
-- `/accounts/signup/` - Registro de nuevos usuarios
-- `/accounts/profile/` - Editar perfil completo
-- `/accounts/profile/email/` - Actualizar solo email
-- `/accounts/login/` - Inicio de sesión
-- `/accounts/password_change/` - Cambio de contraseña
+Stripe secret keys must be supplied through environment variables and must never be committed.
+
+#### Optional chatbot and Ollama integration
+
+The repository contains an optional local chatbot integration. It is currently inactive in the default deployment.
+
+- Ollama endpoint: http://localhost:11434/api/generate
+- Configured model: llama3.2:3b
+- Knowledge source: chatbot/knowledge_base.json and the ChatbotKnowledge model
+- Setup helpers: instalar_ollama.ps1 and instalar_ollama_completo.ps1
+- Maintenance guide: GUIA_ACTUALIZACION_CHATBOT.md
 
 ---
 
-#### 💳 Aplicación Payments (Sistema de Pagos)
+## 3. DATABASE DESIGN
 
-**Propósito:**  
-La aplicación `payments` gestiona la facturación y los pagos de sesiones de carga para usuarios registrados, integrando procesamiento real con Stripe para simular un entorno profesional y seguro de transacciones. Permite que cada usuario visualice sus facturas, consulte tarifas (próximamente), realice pagos y acceda a estadísticas de consumo y gasto.
+The main domain models are:
 
-**Funcionalidades principales:**
-- **Generación automática de facturas** al finalizar cada sesión de carga.
-- **Gestión de tarifas** dinámicas consultables vía API.
-- **Integración con Stripe** para pagos seguros (PaymentIntent y confirmación de pago).
-- **Historial de facturas** personalizadas para cada usuario.
-- **Panel de administración** para revisión de pagos y control financiero.
-- **API RESTful** para consultas, pagos y estadísticas.
-- **Notificaciones automáticas** tras pago exitoso (opcional: email, logs).
-- **Estadísticas detalladas** de pagos y consumo energético.
+- Connector: available connector types such as CCS and CHAdeMO.
+- ChargingPoint: station location, power, connector and current status.
+- Booking: user reservation with start and expiration dates.
+- ChargingSession: active session, battery progress and energy consumption.
+- Profile: user avatar, biography, website link and alias.
+- Thread and Message: private user conversations.
+- Invoice and Rate: charging costs, rates and Stripe payment references.
 
-**Modelos principales:**
-```python
-class Tarifa(models.Model):
-    nombre = models.CharField(max_length=50)
-    precio_kwh = models.DecimalField(max_digits=5, decimal_places=2)
-    activa = models.BooleanField(default=True)
+The main relationships are:
 
-class Factura(models.Model):
-    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    sesion_carga = models.OneToOneField('SesionCarga', on_delete=models.CASCADE)
-    fecha_emision = models.DateTimeField(auto_now_add=True)
-    energia_consumida = models.FloatField()
-    total = models.DecimalField(max_digits=7, decimal_places=2)
-    pagada = models.BooleanField(default=False)
-    stripe_payment_intent = models.CharField(max_length=255, null=True, blank=True)
-```
-> **Nota:** El modelo `Tarifa` permite modificar el precio por kWh dinámicamente, y la relación uno a uno entre `Factura` y `SesionCarga` garantiza la trazabilidad de cada pago.
-
-**Servicios y lógica de negocio (services.py):**
-- **Cálculo automático del importe** al emitir una factura:  
-  ```python
-  total = energia_consumida * tarifa_activa.precio_kwh
-  ```
-- **Creación y gestión de PaymentIntent** con Stripe para cada factura pendiente.
-- **Verificación y actualización del estado de pago** tras confirmación de Stripe.
-- **Sincronización automática** de facturas y pagos mediante señales de Django.
-
-**Endpoints y URLs principales:**
-- `/payments/api/tarifa/` – Consulta la tarifa de energía actual.
-- `/payments/api/mis-facturas/` – Devuelve el listado de facturas del usuario autenticado.
-- `/payments/api/crear-payment-intent/` – Crea un PaymentIntent de Stripe para una factura pendiente.
-- `/payments/api/confirmar-pago/` – Confirma el pago de una factura tras la devolución de Stripe.
-- `/payments/api/estadisticas/` – Proporciona estadísticas de consumo y pagos realizados.
-- `/payments/pagar/<factura_id>/` – Página web para el pago de una factura concreta.
-
-**Flujo típico de pago:**
-1. El usuario finaliza una sesión de carga.
-2. Se genera automáticamente la factura con la energía consumida y el importe.
-3. El usuario accede a su historial de facturas y selecciona “Pagar”.
-4. Se crea un PaymentIntent en Stripe y se muestra el formulario de pago seguro.
-5. Stripe procesa el pago y devuelve la confirmación.
-6. El backend valida el pago y actualiza el estado de la factura a “pagada”.
-
-**Integración con Stripe:**
-- Uso de **PaymentIntent** para pagos seguros, compatible con tarjetas y métodos alternativos.
-- **Webhook opcional** para gestionar pagos asíncronos y verificar el estado real en Stripe.
-- Almacenamiento del `stripe_payment_intent` en la factura para trazabilidad y auditoría.
-- Protección contra pagos duplicados y validación estricta de los datos recibidos.
-
-**Seguridad y validaciones:**
-- Acceso a facturas y endpoints restringido a usuarios autenticados.
-- Comprobación de propiedad: solo el usuario dueño puede consultar o pagar sus facturas.
-- Validación del importe y la sesión de carga antes de crear el intent de pago.
-- Uso de HTTPS y CSRF para formularios y endpoints sensibles.
-- Manejo seguro de claves API de Stripe mediante variables de entorno y configuración en `settings.py`.
-
-**Ejemplo de uso (pseudocódigo):**
-```python
-# Crear factura al terminar sesión
-factura = Factura.objects.create(
-    usuario=request.user,
-    sesion_carga=sesion,
-    energia_consumida=sesion.energia_consumida,
-    total=sesion.energia_consumida * tarifa.precio_kwh
-)
-
-# Crear PaymentIntent (en services.py)
-payment_intent = stripe.PaymentIntent.create(
-    amount=int(factura.total * 100),  # en céntimos
-    currency='eur',
-    metadata={'factura_id': factura.id}
-)
-factura.stripe_payment_intent = payment_intent['id']
-factura.save()
-```
-
-**Consideraciones de diseño:**
-- El sistema está preparado para soportar múltiples métodos de pago en el futuro.
-- La arquitectura desacopla la lógica de facturación y el procesamiento externo de pagos.
-- El usuario nunca expone datos sensibles; todo el flujo de pago ocurre en Stripe.
-- Las estadísticas permiten al usuario y al administrador monitorizar el gasto y consumo eléctrico.
-
-**Mejoras futuras posibles:**
-- Soporte para **pagos recurrentes** o domiciliaciones.
-- Integración de **facturación electrónica** (PDF automático, envío por email).
-- Soporte para **descuentos/promociones** y cupones.
-- Exportación de informes para contabilidad.
+- User to Booking: one-to-many.
+- Charging point to Booking: one-to-many.
+- Booking to Charging Session: one-to-one.
+- Connector to Charging Point: one-to-many.
+- User to Profile: one-to-one.
+- User to Thread: many-to-many.
+- Thread to Message: many-to-many.
 
 ---
 
-## 3. DISEÑO DE LA BASE DE DATOS
+## 4. IMPLEMENTED FEATURES
 
-### 3.1 Modelos Principales
+### Authentication
 
-#### Conector
-```python
-class Conector(models.Model):
-    codigo = models.IntegerField(primary_key=True)
-    denominacion = models.CharField(max_length=100)
-    potencia_kw = models.FloatField(null=True, blank=True)
-```
-**Función**: Define los tipos de conectores disponibles (CCS, CHAdeMO, etc.)
+- Registration and validation.
+- Secure login and logout sessions.
+- Profiles with avatars and biographies.
+- JWT-authenticated mobile API.
 
-#### PuntoRecarga
-```python
-class PuntoRecarga(models.Model):
-    nombre = models.CharField(max_length=150)
-    direccion = models.CharField(max_length=250)
-    latitud = models.DecimalField(max_digits=9, decimal_places=6)
-    longitud = models.DecimalField(max_digits=9, decimal_places=6)
-    potencia_kw = models.FloatField(null=True, blank=True)
-    tipo_conector = models.ForeignKey(Conector, on_delete=models.SET_NULL)
-    estado = models.CharField(max_length=15, choices=ESTADO_CHOICES)
-    energia_suministrada_total = models.FloatField(default=0)
-    energia_actual_sesion = models.FloatField(default=0)
-```
-**Función**: Representa cada punto de carga con su ubicación, características técnicas y estado actual.
+### Charging-station management
 
-#### Reserva
-```python
-class Reserva(models.Model):
-    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    punto = models.ForeignKey("PuntoRecarga", on_delete=models.CASCADE)
-    fecha_inicio = models.DateTimeField(default=timezone.now)
-    fecha_expiracion = models.DateTimeField()
-```
-**Función**: Gestiona las reservas de puntos de carga con expiración automática.
+- Interactive charging-point map.
+- Available, in-use, reserved and out-of-service states.
+- Detailed station information.
+- Filtering and search by features.
 
-#### SesionCarga
-```python
-class SesionCarga(models.Model):
-    reserva = models.OneToOneField(Reserva, on_delete=models.CASCADE)
-    punto_recarga = models.ForeignKey(PuntoRecarga, on_delete=models.CASCADE)
-    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    inicio = models.DateTimeField(auto_now_add=True)
-    fin = models.DateTimeField(null=True, blank=True)
-    activa = models.BooleanField(default=True)
-    porcentaje_bateria_inicial = models.IntegerField(default=20)
-    porcentaje_bateria_actual = models.IntegerField(default=20)
-    energia_consumida = models.FloatField(default=0)
-```
-**Función**: Controla sesiones de carga activas con simulación de progreso de batería.
+### Booking and charging simulation
 
-### 3.2 Relaciones Entre Modelos
-- **Usuario ↔ Reserva**: Relación uno a muchos
-- **PuntoRecarga ↔ Reserva**: Relación uno a muchos
-- **Reserva ↔ SesionCarga**: Relación uno a uno
-- **Conector ↔ PuntoRecarga**: Relación uno a muchos
-- **Usuario ↔ Profile**: Relación uno a uno (registration)
-- **Usuario ↔ Thread**: Relación muchos a muchos (messenger)
-- **Thread ↔ Message**: Relación muchos a muchos (messenger)
+- Configurable bookings, with 30 minutes as the default.
+- Automatic expiration of unused bookings.
+- Real-time availability validation.
+- Start and end of charging sessions.
+- Battery-progress simulation.
+- Energy calculation based on power and elapsed time.
+- Prevention of multiple simultaneous sessions.
 
----
+### Administration and REST API
 
-## 4. FUNCIONALIDADES IMPLEMENTADAS
+- Charging-point management.
+- User and profile administration.
+- Active-session monitoring.
+- Usage and energy statistics.
+- Authentication, charging-point and booking endpoints.
+- Automatic endpoint documentation.
 
-### 4.1 Sistema de Autenticación
-- **Registro de usuarios** con validación de datos
-- **Login/Logout** con sesiones seguras
-- **Gestión de perfiles** con avatares y biografías
-- **API con autenticación JWT** para aplicaciones móviles
+### Management commands
 
-### 4.2 Gestión de Electrolineras
-- **Mapa interactivo** mostrando ubicaciones de puntos de carga
-- **Estados en tiempo real**: Disponible, En Uso, Reservado, Fuera de Servicio
-- **Información detallada** de cada punto (potencia, tipo de conector, ubicación)
-- **Filtrado y búsqueda** de puntos por características
-
-### 4.3 Sistema de Reservas
-- **Reserva de puntos** con duración configurable (30 minutos por defecto)
-- **Expiración automática** de reservas no utilizadas
-- **Validación de disponibilidad** en tiempo real
-- **Historial de reservas** por usuario
-
-### 4.4 Simulador de Carga
-- **Inicio/fin de sesiones** de carga
-- **Simulación de progreso** de batería en tiempo real
-- **Cálculo de energía consumida** basado en potencia y tiempo
-- **Actualización automática** de estados de puntos
-- **Prevención de sesiones múltiples** por usuario
-
-### 4.5 Panel de Administración
-- **Gestión completa** de puntos de carga
-- **Administración de usuarios** y perfiles
-- **Monitorización de sesiones** activas
-- **Estadísticas de uso** y energía suministrada
-
-### 4.6 API REST
-- **Endpoints de autenticación** (login, registro, refresh tokens)
-- **Servicios de consulta** de puntos de carga
-- **Gestión de reservas** vía API
-- **Documentación automática** de endpoints
-
-### 4.7 Sistema de Blog y Contenido (Pages)
-- **Gestión de noticias** relacionadas con movilidad eléctrica
-- **Editor enriquecido** con TinyMCE para contenido formateado
-- **Publicación restringida** solo a usuarios staff autorizados
-- **Visualización paginada** en página principal con últimas entradas
-
-### 4.8 Sistema de Mensajería (Messenger)
-- **Comunicación privada** entre usuarios registrados
-- **Interfaz de chat** moderna y responsiva
-- **Mensajería en tiempo real** sin recargar página
-- **Gestión segura** de permisos por conversación
-
-### 4.9 Gestión Avanzada de Usuarios (Registration)
-- **Registro con email único** y validación robusta
-- **Perfiles completos** con avatar, biografía y enlaces
-- **Actualización granular** de datos de usuario
-- **Integración automática** entre usuario y perfil
-
-### 4.10 Sistema de Comandos de Management
-- **Actualización automática de baterías** mediante comando `actualizar_baterias`
-- **Simulación en tiempo real** del progreso de carga de vehículos
-- **Monitorización continua** de sesiones activas con logs detallados
-- **Configuración flexible** de intervalos de actualización
-- **Notificaciones automáticas** cuando las baterías alcanzan el 100%
-- **Gestión de procesos** en segundo plano para automatización del sistema
-- **Scripts de mantenimiento** para corrección de estados y verificaciones
-
-**Comando principal:**
-```bash
-# Ejecutar simulador de carga con intervalo por defecto (60 segundos)
+~~~bash
 python manage.py actualizar_baterias
-
-# Ejecutar con intervalo personalizado
 python manage.py actualizar_baterias --intervalo 30
-```
+~~~
 
-**Funcionalidades del comando:**
-- Actualiza automáticamente el porcentaje de batería de todas las sesiones activas
-- Simula el proceso real de carga de vehículos eléctricos
-- Proporciona feedback en tiempo real sobre el progreso de cada sesión
-- Detecta automáticamente cuando las baterías alcanzan el 100%
-- Permite configurar la frecuencia de actualización según necesidades
+The command updates active sessions, simulates charging progress, detects full batteries, logs progress and supports configurable intervals.
 
-### 4.11 Payments
+### SEO and indexing
 
-- **Procesamiento de pagos** para sesiones de carga
-- **Integración con pasarelas de pago** (por ejemplo, Stripe.)
-- **Generación de facturas** y recibos automáticos
-- **Historial de transacciones** accesible para el usuario
-- **Validación y seguridad** en el manejo de datos financieros
-- **Notificaciones automáticas** de pago exitoso o fallido
+- Specific titles and descriptions.
+- Canonical URLs, Open Graph and Schema.org structured data.
+- Dynamic XML sitemap.
+- robots.txt and noindex rules for private and transactional areas.
+- Google Search Console verification.
+- Permanent HTTPS redirection.
 
----
+### Privacy and contact
 
-## 5. ARQUITECTURA DE SOFTWARE
+- Cookie-consent manager with persistent preferences.
+- Optional resources loaded only after consent.
+- Public contact through julio@juliomalaga.online and Briar.
 
-### 5.1 Patrón Modelo‑Template‑Vista (MTV)
+### Android application
 
-* **Modelos**: Definen la estructura de datos, las relaciones entre tablas y la lógica de negocio.
-* **Vistas (`views.py`)**: Reciben las peticiones HTTP, interactúan con los modelos y devuelven la respuesta adecuada (generalmente renderizando un template). En términos del patrón MVC, estas vistas cumplen el rol de *Controlador*.
-* **Templates**: Archivos HTML (u otros formatos) que definen la presentación de los datos para el usuario final.
+The official APK is available at:
 
-> **Nota:** Aunque el código de Django se organiza en `models`, `views` y `templates`, la documentación oficial se refiere al patrón como MTV, donde la capa de «Vista» se corresponde con el *Controller* de MVC y la capa de «Template» con la *View* de MVC.
+https://evemaps.pythonanywhere.com/download/evemaps-app/
 
-#### Recursos
+| Data | Value |
+|------|-------|
+| Version | 1.0.4 |
+| Version code | 5 |
+| Map | OpenStreetMap |
+| Size | 20,895,087 bytes |
+| SHA-256 | 6A2FA344C6BBF658FCAA3BE9C52611E765943416BA66FB60BB3999D73C7C3674 |
 
-* **FAQ – “MVC” vs “MTV”** – [https://docs.djangoproject.com/en/5.2/faq/general/#django-appears-to-be-a-mvc-framework-but-you-call-the-controller-the-view-and-the-view-the-template-how-come-you-dont-use-the-standard-names](https://docs.djangoproject.com/en/5.2/faq/general/#django-appears-to-be-a-mvc-framework-but-you-call-the-controller-the-view-and-the-view-the-template-how-come-you-dont-use-the-standard-names)
-* **Glosario – término “MTV”** – [https://docs.djangoproject.com/en/5.2/glossary/#term-mtv](https://docs.djangoproject.com/en/5.2/glossary/#term-mtv)
-
-
-### 5.2 Principios de Diseño Aplicados
-- **Separación de responsabilidades**: Cada app tiene una función específica
-- **Reutilización de código**: Componentes modulares y mixins
-- **Escalabilidad**: Arquitectura preparada para crecimiento
-- **Mantenibilidad**: Código documentado y bien estructurado
-
-### 5.3 Seguridad Implementada
-- **Validación de entrada**: Sanitización de datos de usuario
-- **Protección CSRF**: Tokens de seguridad en formularios
-- **Autenticación robusta**: Passwords hasheados y sesiones seguras
-- **Autorización por roles**: Restricciones basadas en permisos
+The APK is signed with the same certificate as previous official versions, so Android can install it as an update.
 
 ---
 
-## 6. INSTALACIÓN Y CONFIGURACIÓN
+## 5. SOFTWARE ARCHITECTURE
 
-### 6.1 Requisitos del Sistema
-```
+The project follows Django’s Model-Template-View pattern:
+
+- Models define data structures, relationships and business logic.
+- Views receive HTTP requests, interact with models and return responses.
+- Templates define the presentation layer.
+
+In MVC terminology, Django views fulfil approximately the controller role, while Django templates fulfil the view role.
+
+Design principles:
+
+- Separation of concerns.
+- Modular and reusable code.
+- Scalability.
+- Maintainability.
+
+Security controls:
+
+- Input validation and sanitization.
+- CSRF protection.
+- Hashed passwords and secure sessions.
+- Role-based authorization.
+- Authenticated access to personal data and payments.
+- Environment variables for external credentials.
+
+---
+
+## 6. INSTALLATION AND CONFIGURATION
+
+### Requirements
+
+~~~text
 Django==5.2.1
 djangorestframework==3.15.1
 djangorestframework-simplejwt==5.3.0
 django-registration==3.4
 django-tinymce==4.1.0
 Pillow==10.3.0
-```
+~~~
 
-### 6.2 Proceso de Instalación
+### Installation
 
-#### Paso 1: Clonar el repositorio
-```bash
+Clone the repository:
+
+~~~bash
 git clone https://github.com/jesdeltoro/EV-Django-Project.git
 cd EV-Django-Project
-```
+~~~
 
-#### Paso 2: Crear entorno virtual
-```bash
+Create and activate a virtual environment:
+
+~~~bash
 python -m venv venv
-venv\Scripts\activate  # Windows
-source venv/bin/activate  # Linux/Mac
-```
+venv\Scripts\activate
+~~~
 
-#### Paso 3: Instalar dependencias
-```bash
+On Linux or macOS:
+
+~~~bash
+source venv/bin/activate
+~~~
+
+Install dependencies:
+
+~~~bash
 pip install -r requirements.txt
-```
+~~~
 
-#### Paso 4: Configurar base de datos
-```bash
+Initialize the database:
+
+~~~bash
 cd electrolineras_project
 python manage.py makemigrations
 python manage.py migrate
-```
+~~~
 
-#### Paso 5: Crear superusuario
-```bash
+Create an administrator:
+
+~~~bash
 python manage.py createsuperuser
-```
+~~~
 
-#### Paso 6: Iniciar servidor
-```bash
+Start the development server:
+
+~~~bash
 python manage.py runserver
-```
+~~~
 
-### 6.3 Scripts de Automatización
-- **iniciar_app.ps1**: Script PowerShell para inicio automático
-- **instalar_servicio.ps1**: Instalación como servicio Windows
-- **crear_tarea_programada.ps1**: Programación de tareas automáticas
+### Automation scripts
+
+- iniciar_app.ps1: automatic application startup.
+- instalar_servicio.ps1: Windows service installation.
+- crear_tarea_programada.ps1: scheduled-task creation.
+- instalar_ollama.ps1: interactive Ollama setup.
+- instalar_ollama_completo.ps1: automated Ollama setup.
+
+The Ollama chatbot is optional and currently inactive.
 
 ---
 
-## 7. TESTING Y VALIDACIÓN
+## 7. TESTING AND VALIDATION
 
-### 7.1 Pruebas Realizadas
-- **Pruebas unitarias** de modelos y funciones críticas
-- **Pruebas de integración** de API REST
-- **Pruebas de interfaz** en diferentes navegadores
-- **Pruebas de carga** con múltiples usuarios simultáneos
+Test categories include:
 
-### 7.2 Casos de Uso Validados
-1. **Registro y autenticación** de usuarios
-2. **Búsqueda y localización** de puntos de carga
-3. **Proceso completo** de reserva y carga
-4. **Gestión administrativa** de recursos
-5. **Integración API** para aplicaciones externas
+- Unit tests for models and critical functions.
+- REST API integration tests.
+- Browser and interface tests.
+- Load tests with concurrent users.
 
-### 7.3 Archivo de Pruebas API
-```python
-# test_api.py - Pruebas automatizadas de endpoints
+Validated use cases:
+
+1. User registration and authentication.
+2. Charging-point search and location.
+3. Complete booking and charging process.
+4. Administrative resource management.
+5. API integration for external applications.
+
+Example:
+
+~~~python
 import requests
 import json
 
 def test_register_user():
-    """Prueba registro de nuevo usuario"""
-    # Implementación de pruebas...
+    pass
 
 def test_login_user():
-    """Prueba autenticación de usuario"""
-    # Implementación de pruebas...
-```
+    pass
+~~~
 
 ---
 
-## 8. DESPLIEGUE Y PRODUCCIÓN
+## 8. DEPLOYMENT AND PRODUCTION
 
-### 8.1 Configuración de Producción
-```python
-# settings.py - Configuraciones para producción
+Production settings:
+
+~~~python
 DEBUG = False
-ALLOWED_HOSTS = ['mi-dominio.com', 'www.mi-dominio.com']
+ALLOWED_HOSTS = ['evemaps.pythonanywhere.com']
 SECURE_SSL_REDIRECT = True
-SECURE_HSTS_SECONDS = 31536000
-```
+~~~
 
-### 8.2 Optimizaciones Implementadas
-- **Archivos estáticos** servidos eficientemente
-- **Base de datos** optimizada con índices
-- **Cache** de consultas frecuentes
-- **Compresión** de recursos CSS/JavaScript
+The application is deployed on PythonAnywhere and publishes the map, blog, REST API, sitemap and Android download over HTTPS.
 
-### 8.3 Monitorización
-- **Logs detallados** de errores y accesos
-- **Métricas de rendimiento** de la aplicación
-- **Alertas automáticas** para fallos críticos
+Optimizations include efficient static-file serving, database indexes, query caching, CSS and JavaScript compression, semantic SEO metadata, a dynamic sitemap and cookie consent before optional resources are loaded.
+
+Monitoring includes error logs, access logs, performance metrics and alerts for critical failures.
 
 ---
 
-## 9. RESULTADOS Y CONCLUSIONES
+## 9. RESULTS AND FUTURE WORK
 
-### 9.1 Objetivos Alcanzados
-✅ **Sistema completo** de gestión de electrolineras
-✅ **Interfaz intuitiva** y responsiva
-✅ **API REST funcional** para integraciones
-✅ **Simulación realista** de procesos de carga
-✅ **Seguridad robusta** y validación de datos
-✅ **Documentación completa** del proyecto
+Achieved objectives:
 
-### 9.2 Aprendizajes Técnicos
-- **Desarrollo web completo** con Django
-- **Diseño de APIs RESTful** profesionales
-- **Gestión de estados** en aplicaciones complejas
-- **Simulación de procesos** de tiempo real
-- **Integración de múltiples tecnologías**
+- Complete charging-station management system.
+- Responsive user interface.
+- Functional REST API.
+- Realistic charging simulation.
+- Security validation and access controls.
+- Technical project documentation.
 
-### 9.3 Posibles Mejoras Futuras
-- **Integración con mapas reales** (Google Maps, OpenStreetMap)
-- **Aplicación móvil nativa** con React Native/Flutter
-- **Sistema de pagos** integrado
-- **Machine Learning** para optimización de carga
-- **IoT** para conexión con hardware real
+Potential improvements:
+
+- Integration with production map services.
+- Native React Native or Flutter application.
+- Expanded payment methods.
+- Machine learning for charging optimization.
+- IoT connectivity with physical charging hardware.
 
 ---
 
-## 10. ANEXOS
+## 10. MAIN URLS
 
-### 10.1 Estructura Completa del Proyecto
-```
-EV-Django-Project/
-├── crear_tarea_programada.ps1
-├── iniciar_app.ps1
-├── instalar_servicio.ps1
-├── EV-Django-Project.code-workspace
-├── README.md
-├── requirements.txt
-├── test_api.py
-├── electrolineras_project/
-│   ├── manage.py
-│   ├── db.sqlite3
-│   ├── debug_serializer.py
-│   ├── core/
-│   │   ├── models.py
-│   │   ├── views.py
-│   │   ├── urls.py
-│   │   └── templates/
-│   ├── electrolineras/
-│   │   ├── models.py
-│   │   ├── views.py
-│   │   ├── urls.py
-│   │   └── templates/
-│   ├── pages/
-│   ├── messenger/
-│   ├── payments/
-│   │   ├── models.py
-│   │   ├── services.py
-│   │   ├── views.py
-│   │   └── templates/
-│   ├── profiles/
-│   ├── registration/
-│   ├── sent_emails/
-│   └── electrolineras_project/
-│       ├── __init__.py
-│       ├── settings.py
-│       ├── urls.py
-│       └── wsgi.py
-└── Recursos/
-```
-
-### 10.2 Configuraciones Clave
-```python
-# settings.py - Configuraciones principales
-INSTALLED_APPS = [
-    'registration',
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'electrolineras',
-    'profiles',
-    'core',
-    'messenger',
-    'payments',
-    'rest_framework',
-    'pages.apps.PagesConfig',
-    'tinymce',
-]
-
-LANGUAGE_CODE = 'es'
-TIME_ZONE = 'Europe/Madrid'
-```
-
-### 10.3 URLs Principales
-```python
-# URLs del sistema
-/                    # Página principal
-/mapa/               # Mapa de electrolineras
-/admin/              # Panel de administración
-/accounts/           # Autenticación
-/profiles/           # Perfiles de usuario
-/api/token/          # API de autenticación
-/electrolineras/     # Gestión de puntos de recarga
-/pages/              # Blog y noticias
-/messenger/          # Sistema de mensajería
-/payments/           # Sistema de pagos (API y UI)
-/payments/api/tarifa/               # Tarifa de energía actual
-/payments/api/mis-facturas/         # Listado de facturas del usuario
-/payments/api/crear-payment-intent/ # Crear PaymentIntent en Stripe
-/payments/api/confirmar-pago/       # Confirmar estado de pago
-/payments/api/estadisticas/         # Estadísticas de pagos y facturas
-/payments/pagar/<factura_id>/       # Página de pago de factura
-```
+~~~text
+/                                   Home page
+/mapa/                              Charging-station map
+/admin/                             Administration panel
+/accounts/                          Authentication
+/profiles/                          User profiles
+/api/token/                         Authentication API
+/electrolineras/                    Charging-point management
+/pages/                             Blog and news
+/messenger/                         Messaging system
+/payments/                          Payment API and UI
+/payments/api/tarifa/               Current energy rate
+/payments/api/mis-facturas/         User invoice list
+/payments/api/crear-payment-intent/ Create a Stripe PaymentIntent
+/payments/api/confirmar-pago/       Confirm payment status
+/payments/api/estadisticas/         Payment and invoice statistics
+/payments/pagar/<invoice_id>/       Invoice payment page
+~~~
 
 ---
 
-## CERTIFICACIÓN
+## CERTIFICATION
 
-Este documento constituye la documentación técnica completa del proyecto "Sistema de Gestión de Electrolineras", desarrollado como Trabajo Fin de Grado para el ciclo formativo de Desarrollo de Aplicaciones Multiplataforma (DAM).
+This document provides the technical documentation for the Electric Vehicle Charging Station Management System, developed as a final project for the Higher Vocational Training programme in Multiplatform Application Development.
 
-**Autor**: Julio Schneider Estop  
-**Repositorio**: https://github.com/jesdeltoro/EV-Django-Project  
-**Fecha**: Junio 2025  
-**Tecnología Principal**: Django 5.2.1 + Python
+**Author:** Julio Schneider Estop
+**Repository:** https://github.com/jesdeltoro/EV-Django-Project
+**Date:** June 2025
+**Main technology:** Django 5.2.1 and Python
 
-El proyecto demuestra competencias en:
-- Desarrollo web full-stack
-- Diseño de bases de datos
-- Programación orientada a objetos
-- APIs REST y servicios web
-- Gestión de proyectos de software
-- Documentación técnica profesional
+The project demonstrates skills in:
+
+- Full-stack web development.
+- Database design.
+- Object-oriented programming.
+- REST APIs and web services.
+- Software-project management.
+- Professional technical documentation.

@@ -33,10 +33,14 @@ venv.bak/
 # Django stuff
 *.log
 local_settings.py
+token.txt
 db.sqlite3
 db.sqlite3-journal
 media/
 !media/.gitkeep
+*.sqlite3
+*.sqlite3-journal
+Thumbs.db
 
 # Editor files
 .idea/
@@ -51,4 +55,5 @@ EV-Django-Project.code-workspace
 # Custom exclusions
 /test/
 sent_emails/
+electrolineras_project/static/
 preparar_distribucion.py

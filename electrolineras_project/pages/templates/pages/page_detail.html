@@ -1,6 +1,25 @@
 {% extends 'core/base.html' %}
 {% load static %}
 {% block title %}{{page.title}}{% endblock %}
+{% block meta_description %}{{ page.content|striptags|truncatechars:155 }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_title %}{{ page.title }} | EvEMaps{% endblock %}
+{% block og_description %}{{ page.content|striptags|truncatechars:155 }}{% endblock %}
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "{{ page.title|escapejs }}",
+  "description": "{{ page.content|striptags|truncatechars:155|escapejs }}",
+  "datePublished": "{{ page.created|date:'c' }}",
+  "dateModified": "{{ page.updated|date:'c' }}",
+  "mainEntityOfPage": "{{ SEO_SITE_URL }}{{ request.path }}",
+  "author": {"@type": "Organization", "name": "EvEMaps"},
+  "publisher": {"@type": "Organization", "name": "EvEMaps"}
+}
+</script>
+{% endblock %}
 {% block content %}
 {% include 'pages/includes/pages_menu.html' %}
 
@@ -9,7 +28,7 @@
   <div class="container">
     <div class="row mt-3">
       <div class="col-md-10 mx-auto mb-5">
-        <h2 class="purple-title mb-4">{{page.title}}</h2>
+        <h1 class="purple-title mb-4">{{page.title}}</h1>
         <div class="page-detail-container">
           <div class="page-detail-content">
             {{ page.content|safe }}
