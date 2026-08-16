@@ -411,6 +411,23 @@ SECURE_SSL_REDIRECT = True
 
 The application is deployed on PythonAnywhere and publishes the map, blog, REST API, sitemap and Android download over HTTPS.
 
+SMTP credentials are deployment secrets and must never be stored in
+`settings.py`. Configure the following environment variables using values from
+your email provider; `.env.example` documents the expected names without real
+credentials:
+
+~~~text
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=true
+EMAIL_HOST_USER=<smtp account>
+EMAIL_HOST_PASSWORD=<new app password>
+DEFAULT_FROM_EMAIL=<sender address>
+~~~
+
+After any credential exposure, revoke the old app password before configuring
+a replacement in the private deployment environment.
+
 Optimizations include efficient static-file serving, database indexes, query caching, CSS and JavaScript compression, semantic SEO metadata, a dynamic sitemap and cookie consent before optional resources are loaded.
 
 Monitoring includes error logs, access logs, performance metrics and alerts for critical failures.

@@ -194,13 +194,23 @@ LOGOUT_REDIRECT_URL = 'home'
 LOGIN_URL = '/accounts/login/'  # URL de login para redirigir a los usuarios no autenticados
 
 # Email settings
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'jjse79@gmail.com'  # Reemplaza con tu correo de Gmail
-EMAIL_HOST_PASSWORD = 'foqhqssweyhnlxky'  # Reemplaza con tu contraseña de aplicación
-DEFAULT_FROM_EMAIL = 'jjse79@gmail.com'  # Correo para envíos
+# SMTP credentials must be supplied by the deployment environment. Never commit
+# real credentials to this repository.
+EMAIL_BACKEND = os.environ.get(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.smtp.EmailBackend',
+)
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'true').lower() in {
+    '1', 'true', 'yes', 'on',
+}
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get(
+    'DEFAULT_FROM_EMAIL',
+    EMAIL_HOST_USER or 'webmaster@localhost',
+)
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
