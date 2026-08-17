@@ -2,6 +2,31 @@ from rest_framework import serializers
 from .models import PuntoRecarga, Reserva, SesionCarga
 from django.utils import timezone
 
+
+class PuntoRecargaPublicSerializer(serializers.ModelSerializer):
+    """Datos seguros de los puntos para el mapa público de solo lectura."""
+
+    tipo_conector_nombre = serializers.CharField(
+        source="tipo_conector.denominacion",
+        read_only=True,
+        allow_null=True,
+    )
+
+    class Meta:
+        model = PuntoRecarga
+        fields = (
+            "id",
+            "nombre",
+            "direccion",
+            "latitud",
+            "longitud",
+            "potencia_kw",
+            "tipo_conector",
+            "tipo_conector_nombre",
+            "estado",
+        )
+
+
 class PuntoRecargaSerializer(serializers.ModelSerializer):
     reservado = serializers.SerializerMethodField()
     reservado_por = serializers.SerializerMethodField()

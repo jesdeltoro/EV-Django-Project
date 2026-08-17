@@ -19,7 +19,9 @@ def mapa_puntos_recarga(request):
     if puntos_actualizados > 0:
         print(f"Se actualizaron {puntos_actualizados} puntos que tenían reservas expiradas")
     
-    puntos = PuntoRecarga.objects.all()
+    puntos = PuntoRecarga.objects.select_related('tipo_conector').order_by('pk')
+    if not request.user.is_authenticated:
+        puntos = puntos[:3]
     # Debug: imprime en consola cuántos puntos hay y sus coordenadas
     print("Total puntos:", puntos.count())
     for p in puntos:
