@@ -43,6 +43,11 @@
     <div>
       <h1>Mapa de electrolineras y puntos de recarga</h1>
       <p class="lead text-white">Localiza estaciones para coches eléctricos y consulta su conector, potencia y disponibilidad.</p>
+      {% if not request.user.is_authenticated %}
+      <div class="alert alert-info" role="status">
+        Estás viendo los puntos predeterminados en modo consulta. Inicia sesión para usar tu ubicación y realizar reservas u otras operaciones.
+      </div>
+      {% endif %}
     </div>
   </div>
   <div id="map" role="region" aria-label="Mapa interactivo de electrolineras" style="height: 600px; width: 100%; margin-bottom: 35px;"></div>
@@ -54,7 +59,13 @@
       <article class="col-md-6 col-lg-4 mb-4">
         <div class="card h-100" style="background: rgba(255, 255, 255, 0.94);">
           <div class="card-body">
-            <h3 class="h5"><a href="{% url 'detalle_punto_recarga' punto.pk %}" style="color: #4B0082;">{{ punto.nombre }}</a></h3>
+            <h3 class="h5">
+              {% if request.user.is_authenticated %}
+              <a href="{% url 'detalle_punto_recarga' punto.pk %}" style="color: #4B0082;">{{ punto.nombre }}</a>
+              {% else %}
+              <span style="color: #4B0082;">{{ punto.nombre }}</span>
+              {% endif %}
+            </h3>
             <p class="mb-2"><strong>Dirección:</strong> {{ punto.direccion }}</p>
             <p class="mb-2"><strong>Conector:</strong> {{ punto.tipo_conector.denominacion|default:"No especificado" }}</p>
             <p class="mb-0"><strong>Potencia:</strong> {{ punto.potencia_kw|default:"No especificada" }}{% if punto.potencia_kw %} kW{% endif %} · <strong>Estado:</strong> {{ punto.get_estado_display }}</p>
@@ -96,6 +107,8 @@
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
 <script>
+  const userIsAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+
   // Función para obtener el token CSRF de las cookies
   function getCookie(name) {
     let cookieValue = null;
@@ -313,10 +326,39 @@
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
+
+  {% if request.user.is_authenticated %}
+  // La ubicación del dispositivo solo se solicita a usuarios identificados.
+  if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        const userCoordinates = [position.coords.latitude, position.coords.longitude];
+        L.circleMarker(userCoordinates, {
+          radius: 8,
+          color: '#ffffff',
+          weight: 3,
+          fillColor: '#007bff',
+          fillOpacity: 1
+        }).addTo(map).bindPopup('Tu ubicación');
+        map.setView(userCoordinates, 13);
+      },
+      function(error) {
+        console.info('No se utilizó la ubicación del dispositivo:', error.message);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+    );
+  }
+  {% endif %}
+
   // Función para obtener y mostrar los puntos de recarga
   function loadChargingPoints() {
     fetch('/electrolineras/api/puntos/')
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`No se pudieron cargar los puntos (${response.status})`);
+        }
+        return response.json();
+      })
       .then(data => {
         var markers = L.markerClusterGroup();
         // Mapa para acceder a los marcadores por ID
@@ -326,7 +368,7 @@
             <strong>${point.nombre}</strong><br>
             ${point.direccion}<br>
             Potencia: ${point.potencia_kw} kW<br>
-            Conector: ${point.tipo_conector} (${point.tipo_conector_nombre})<br>
+            Conector: ${point.tipo_conector_nombre || 'No especificado'}<br>
           `;
           
           // Añadir información de estado con colores
@@ -348,6 +390,8 @@
           
           // Mostrar estado con estilo
           popupContent += `<div style="margin-top: 5px;">Estado: <span style="${estadoStyle}">${point.estado.replace('_', ' ').toUpperCase()}</span></div>`;
+          {% if request.user.is_authenticated %}
+            // La información privada y las acciones solo se renderizan para usuarios identificados.
             // Mostrar información de sesión si el punto está en uso
           if (point.estado === 'en_uso' && point.sesion_actual) {
             const porcentaje = point.sesion_actual.porcentaje_bateria;
@@ -417,6 +461,7 @@
               ${botonesAccion}
             </div>
           `;
+          {% endif %}
             // Crear el marcador con un popup personalizado según el estado
           let borderColor;
           switch (point.estado) {
@@ -463,6 +508,7 @@
               container.style.borderLeft = `5px solid ${borderColor}`;
             }
             
+            {% if request.user.is_authenticated %}
             // Iniciar cuenta atrás de reserva si es necesario
             if (point.reservado && point.fecha_expiracion && point.estado !== 'en_uso') {
               console.log(`⏱️ Iniciando cuenta atrás para reserva del punto: ${point.id}`);
@@ -487,6 +533,7 @@
                 if (intervaloEstado) clearInterval(intervaloEstado);
               });
             }
+            {% endif %}
 
             localStorage.setItem('ultimoPopupAbierto', point.id);
           });
@@ -746,15 +793,14 @@ function verificarSesionesActivas() {
     setTimeout(verificarSesionesActivas, 10000);
 }
 
-// Iniciar la carga de puntos y la actualización dinámica
-loadChargingPoints();
-
 // Programar la primera verificación después de que se carguen los puntos
+{% if request.user.is_authenticated %}
 setTimeout(() => {
     console.log('🚀 Iniciando sistema de monitoreo de cargas...');
     iniciarActualizacionDinamica();
     verificarSesionesActivas();
 }, 2000);
+{% endif %}
 
   // Función para detener la carga directamente sin verificación previa
   function detenerCargaDirectamente(params) {

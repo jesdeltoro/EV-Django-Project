@@ -4,7 +4,12 @@ from rest_framework.views import APIView
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from .models import PuntoRecarga, Reserva, SesionCarga
-from .serializers import PuntoRecargaSerializer, ReservaSerializer, SesionCargaSerializer
+from .serializers import (
+    PuntoRecargaPublicSerializer,
+    PuntoRecargaSerializer,
+    ReservaSerializer,
+    SesionCargaSerializer,
+)
 from typing import Any, Optional, List, cast, Dict
 from django.db.models.query import QuerySet
 from django.db.models import Model
@@ -13,16 +18,26 @@ import random
 # Eliminamos toda la parte de tipado que estaba causando problemas
 
 class PuntoRecargaListAPIView(generics.ListAPIView):
-    queryset = PuntoRecarga.objects.all()
+    queryset = PuntoRecarga.objects.select_related('tipo_conector').order_by('pk')
     serializer_class = PuntoRecargaSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
+
+    def get_serializer_class(self):
+        if self.request.user.is_authenticated:
+            return PuntoRecargaSerializer
+        return PuntoRecargaPublicSerializer
 
     def get_queryset(self):
+        queryset = super().get_queryset()
+
+        if not self.request.user.is_authenticated:
+            return queryset[:3]
+
         # Actualizar la batería y energía consumida de todas las sesiones activas
         sesiones_activas = SesionCarga.objects.filter(activa=True)
         for sesion in sesiones_activas:
             sesion.actualizar_bateria()
-        return super().get_queryset()
+        return queryset
 
 class ReservaListCreateAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
