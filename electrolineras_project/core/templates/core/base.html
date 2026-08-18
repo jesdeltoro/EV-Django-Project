@@ -100,6 +100,7 @@
               <h5>Enlaces Útiles</h5>
               <ul class="list-unstyled">                <li><a href="{% url 'home' %}" class="text-white">Inicio</a></li>
                 <li><a href="{% url 'pages_app:pages' %}" class="text-white">Blog</a></li>
+                <li><a href="https://portfolio.juliomalaga.online" class="text-white" target="_blank" rel="noopener noreferrer">Portfolio de Julio Málaga</a></li>
                 {% if request.user.is_authenticated %}
                 <li><a href="{% url 'mapa_puntos_recarga' %}" class="text-white">Mapa</a></li>
                 <li><a href="{% url 'payments:facturas' %}" class="text-white">Mis Facturas</a></li>
