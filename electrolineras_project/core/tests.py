@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.contrib.auth.models import AnonymousUser
 from django.template.loader import get_template
 from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
@@ -42,6 +44,11 @@ class CookieConsentTemplateTests(SimpleTestCase):
         self.assertIn('target="_blank" rel="noopener noreferrer"', html)
         self.assertNotIn("info@evemaps.com", html)
         self.assertNotIn("+34 123 456 789", html)
+
+    def test_footer_uses_the_current_year(self):
+        html = self.render_base()
+
+        self.assertIn(f"&copy; {date.today().year} EvEMaps", html)
 
     def test_global_seo_metadata_is_available(self):
         html = self.render_base()
