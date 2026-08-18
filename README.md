@@ -35,7 +35,7 @@ The project models a professional system that could be extended for real-world d
 
 Backend:
 
-- Django 5.2.1
+- Django 5.2 LTS
 - Python 3.x
 - SQLite for development
 - Django REST Framework
@@ -299,7 +299,7 @@ Security controls:
 ### Requirements
 
 ~~~text
-Django==5.2.1
+Django==5.2.17
 djangorestframework==3.15.1
 djangorestframework-simplejwt==5.3.0
 django-registration==3.4
@@ -485,7 +485,7 @@ This document provides the technical documentation for the Electric Vehicle Char
 **Author:** Julio Schneider Estop
 **Repository:** https://github.com/jesdeltoro/EV-Django-Project
 **Date:** June 2025
-**Main technology:** Django 5.2.1 and Python
+**Main technology:** Django 5.2 LTS and Python
 
 The project demonstrates skills in:
 
