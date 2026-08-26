@@ -6,6 +6,7 @@ from .views import (
     RegisterAPIView,
     download_apk,
     google_site_verification,
+    llms_txt,
     robots_txt,
 )
 from rest_framework_simplejwt.views import (
@@ -18,6 +19,7 @@ urlpatterns = [
     path('', HomePageView.as_view(), name="home"),
     path('mapa/', RedirectView.as_view(pattern_name='mapa_puntos_recarga', permanent=True), name="mapa"),
     path('robots.txt', robots_txt, name='robots_txt'),
+    path('llms.txt', llms_txt, name='llms_txt'),
     path(
         'googleabf16e15cc4e6a49.html',
         google_site_verification,
