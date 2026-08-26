@@ -92,6 +92,15 @@ class SeoPublicEndpointsTests(TestCase):
         self.assertContains(response, "Disallow: /admin/")
         self.assertContains(response, "Disallow: /electrolineras/api/")
 
+    def test_llms_txt_describes_project_and_public_resources(self):
+        response = self.client.get("/llms.txt")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response["Content-Type"].startswith("text/plain"))
+        self.assertContains(response, "Trabajo de Fin de Grado")
+        self.assertContains(response, "simulador de puntos de carga de coches eléctricos")
+        self.assertContains(response, "https://evemaps.pythonanywhere.com/sitemap.xml")
+
     def test_google_site_verification_file_is_served_verbatim(self):
         response = self.client.get("/googleabf16e15cc4e6a49.html")
 
@@ -125,6 +134,8 @@ class SeoPublicEndpointsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(html.count("<h1"), 1)
         self.assertContains(response, "Encuentra electrolineras y puntos de recarga")
+        self.assertContains(response, "EvEMaps es un Trabajo de Fin de Grado (TFG)")
+        self.assertContains(response, '"@type": "CreativeWork"')
         self.assertContains(response, 'type="application/ld+json"')
         self.assertContains(
             response,

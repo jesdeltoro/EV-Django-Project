@@ -2,7 +2,7 @@
 {% load static %}
 {% load pages_extras %}
 {% block title %}Mapa de electrolineras y puntos de recarga{% endblock %}
-{% block meta_description %}Encuentra electrolineras y puntos de recarga para coches eléctricos con EvEMaps. Consulta ubicación, conectores, potencia y disponibilidad en el mapa.{% endblock %}
+{% block meta_description %}EvEMaps es un TFG y simulador de puntos de carga de coches eléctricos. Encuentra electrolineras y consulta ubicación, conectores, potencia y disponibilidad.{% endblock %}
 {% block og_title %}Mapa de electrolineras y puntos de recarga | EvEMaps{% endblock %}
 {% block og_description %}Localiza estaciones de carga para coches eléctricos y consulta conectores, potencia y disponibilidad.{% endblock %}
 {% block structured_data %}
@@ -24,6 +24,29 @@
       "url": "{{ SEO_SITE_URL }}/",
       "logo": "{{ SEO_SITE_URL }}{% static 'core/img/EvEMaps.png' %}",
       "email": "julio@juliomalaga.online"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "{{ SEO_SITE_URL }}/#application",
+      "name": "EvEMaps",
+      "url": "{{ SEO_SITE_URL }}/",
+      "applicationCategory": "UtilitiesApplication",
+      "applicationSubCategory": "Movilidad eléctrica",
+      "operatingSystem": "Web, Android",
+      "description": "Simulador de puntos de carga de coches eléctricos para localizar electrolineras, consultar conectores y potencia, y simular sesiones de carga.",
+      "isPartOf": {"@id": "{{ SEO_SITE_URL }}/#website"},
+      "author": {"@id": "{{ SEO_SITE_URL }}/#organization"}
+    },
+    {
+      "@type": "CreativeWork",
+      "genre": "Trabajo de Fin de Grado",
+      "@id": "{{ SEO_SITE_URL }}/#tfg",
+      "name": "EvEMaps: simulador de puntos de carga de coches eléctricos",
+      "headline": "Trabajo de Fin de Grado sobre movilidad eléctrica y puntos de recarga",
+      "description": "Trabajo de Fin de Grado que desarrolla una aplicación web para localizar puntos de recarga y simular sesiones de carga de vehículos eléctricos.",
+      "inLanguage": "es",
+      "about": {"@id": "{{ SEO_SITE_URL }}/#application"},
+      "author": {"@id": "{{ SEO_SITE_URL }}/#organization"}
     }
   ]
 }
@@ -158,6 +181,22 @@
         <h3 style="color: #4B0082; font-size: 1.3rem;">Consulta disponibilidad</h3>
         <p>Comprueba si un punto está disponible, reservado, en uso o fuera de servicio antes de desplazarte.</p>
       </article>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="tfg-title" style="background: rgba(245, 240, 252, 0.98); color: #2d2436; padding: 50px 0;">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <h2 id="tfg-title" style="color: #4B0082; font-weight: 700;">EvEMaps: un TFG y simulador de puntos de carga</h2>
+        <p class="lead mt-3">
+          EvEMaps es un Trabajo de Fin de Grado (TFG) centrado en la movilidad eléctrica. La aplicación funciona como un simulador de puntos de carga de coches eléctricos: permite localizar electrolineras, consultar sus características y representar el flujo de una reserva y una sesión de recarga.
+        </p>
+        <p>
+          El proyecto combina un mapa de estaciones, información sobre conectores y potencia, estados de disponibilidad, gestión de reservas y seguimiento de la carga. Su objetivo es mostrar cómo una plataforma web puede ayudar a planificar la recarga de un vehículo eléctrico y servir como base para estudiar la infraestructura de movilidad eléctrica.
+        </p>
+      </div>
     </div>
   </div>
 </section>

@@ -52,6 +52,31 @@ def robots_txt(request):
 
 
 @require_GET
+def llms_txt(request):
+    """Información breve y legible para sistemas de IA y otros agentes."""
+    content = f"""# EvEMaps
+
+> EvEMaps es un Trabajo de Fin de Grado (TFG) y un simulador de puntos de carga de coches eléctricos.
+
+## Descripción
+
+EvEMaps permite localizar electrolineras y puntos de recarga para vehículos eléctricos, consultar dirección, conectores, potencia y disponibilidad, y simular el inicio y seguimiento de una sesión de carga.
+
+## Sitios públicos
+
+- Inicio: {settings.SITE_URL}/
+- Mapa de electrolineras: {settings.SITE_URL}/electrolineras/mapa/
+- Blog: {settings.SITE_URL}/pages/
+- Sitemap: {settings.SITE_URL}/sitemap.xml
+
+## Temática
+
+Trabajo de Fin de Grado sobre movilidad eléctrica, localización de infraestructura de recarga y simulación de sesiones de carga de coches eléctricos.
+"""
+    return HttpResponse(content, content_type="text/plain; charset=utf-8")
+
+
+@require_GET
 def google_site_verification(request):
     return HttpResponse(
         "google-site-verification: googleabf16e15cc4e6a49.html\n",
