@@ -40,7 +40,7 @@ class CookieConsentTemplateTests(SimpleTestCase):
             'href="briar://ab3xpxsjcfv2jy3dq5xxb4iyhsjpjwius4qlfaga2bgjxqccjflhg"',
             html,
         )
-        self.assertIn('href="https://portfolio.juliomalaga.online"', html)
+        self.assertIn('href="https://portfolio-julio.pages.dev/"', html)
         self.assertIn('target="_blank" rel="noopener noreferrer"', html)
         self.assertNotIn("info@evemaps.com", html)
         self.assertNotIn("+34 123 456 789", html)
