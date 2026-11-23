@@ -35,7 +35,7 @@ class CookieConsentTemplateTests(SimpleTestCase):
     def test_public_contact_details_are_linked(self):
         html = self.render_base()
 
-        self.assertIn('href="mailto:julio@juliomalaga.online"', html)
+        self.assertIn('href="mailto:jjse79@hotmail.com"', html)
         self.assertIn(
             'href="briar://ab3xpxsjcfv2jy3dq5xxb4iyhsjpjwius4qlfaga2bgjxqccjflhg"',
             html,
