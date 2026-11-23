@@ -246,7 +246,7 @@ The command updates active sessions, simulates charging progress, detects full b
 
 - Cookie-consent manager with persistent preferences.
 - Optional resources loaded only after consent.
-- Public contact through julio@juliomalaga.online and Briar.
+- Public contact through jjse79@hotmail.com and Briar.
 
 ### Android application
 
